@@ -6,10 +6,10 @@ from fastapi.concurrency import asynccontextmanager
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter, WebSocketRateLimiter
+
+from app.core import cache_util
 
 from .config.setting import settings
 from .core.exceptions import handle_exception
@@ -40,6 +40,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
         logger.info("✅ Redis租户配置初始化完成")
         await SchedulerUtil.init_scheduler(redis=app.state.redis)
         logger.info("✅ 定时任务调度器初始化完成")
+        await cache_util.init(redis=app.state.redis)
+        logger.info("✅ fastapi-admin-cache 初始化完成")
         await FastAPILimiter.init(
             redis=app.state.redis,
             prefix=settings.REQUEST_LIMITER_REDIS_PREFIX,
@@ -47,8 +49,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
             ws_callback=ws_limit_callback,
         )
         logger.info("✅ 请求限流器初始化完成")
-        FastAPICache.init(backend=RedisBackend(app.state.redis), prefix="fastapi-admin-cache", expire=300, enable=True)
-        logger.info("✅ fastapi-cache2 初始化完成")
 
         console_start(
             host=settings.SERVER_HOST, port=settings.SERVER_PORT,
@@ -65,8 +65,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[Any, Any]:
     try:
         await SchedulerUtil.shutdown(wait=True)
         logger.info("✅ 定时任务调度器已关闭")
-        await FastAPICache.clear()
-        logger.info("✅ fastapi-cache2 已关闭")
+        await cache_util.clear()
+        logger.info("✅ fastapi-admin-cache 已关闭")
         await FastAPILimiter.close()
         logger.info("✅ 请求限制器已关闭")
         await import_modules_async(modules=settings.EVENT_LIST, desc="全局事件", app=app, status=False)

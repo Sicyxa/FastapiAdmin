@@ -42,13 +42,26 @@ async def invoice_list_my_controller(
     )
     return SuccessResponse(data=result, msg="查询成功")
 
-@TenantInvoiceRouter.get("/{id}/download", summary="下载发票PDF", response_model=ResponseSchema[dict])
+@TenantInvoiceRouter.get("/{id}/download", summary="下载发票PDF与授权函", response_model=ResponseSchema[dict])
 async def invoice_download_controller(
     id: Annotated[int, Path(ge=1)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["*:*:*"]))],
 ) -> JSONResponse:
     pdf_url = await InvoiceTenantService.download(auth, id, auth.tenant_id)
-    return SuccessResponse(msg="下载地址", data={"pdf_url": pdf_url})
+    oss_license_pdf_url = await InvoiceTenantService.download_license(auth, id, auth.tenant_id)
+    return SuccessResponse(
+        msg="下载地址",
+        data={"pdf_url": pdf_url, "oss_license_pdf_url": oss_license_pdf_url},
+    )
+
+
+@TenantInvoiceRouter.get("/{id}/license/download", summary="下载开源授权函PDF", response_model=ResponseSchema[dict])
+async def invoice_license_download_controller(
+    id: Annotated[int, Path(ge=1)],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["*:*:*"]))],
+) -> JSONResponse:
+    oss_license_pdf_url = await InvoiceTenantService.download_license(auth, id, auth.tenant_id)
+    return SuccessResponse(msg="授权函下载地址", data={"oss_license_pdf_url": oss_license_pdf_url})
 
 PlatformInvoiceRouter = APIRouter(prefix="/invoice", route_class=OperationLogRoute, tags=["平台管理", "发票管理"])
 
@@ -78,6 +91,7 @@ async def invoice_issue_controller(
         id,
         data.pdf_url or "",
         data.api_response or "",
+        data.oss_license_pdf_url or "",
     )
     return SuccessResponse(data=result, msg="发票开具成功")
 

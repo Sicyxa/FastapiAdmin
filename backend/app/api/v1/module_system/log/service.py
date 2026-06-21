@@ -1,3 +1,4 @@
+
 from app.core.base_schema import AuthSchema
 from app.core.exceptions import CustomException
 from app.core.logger import logger
@@ -49,7 +50,7 @@ class LoginLogService:
         if len(ids) < 1:
             raise CustomException(msg="删除失败，删除对象不能为空")
 
-        existing = await LoginLogCRUD(self.auth).list(search={"id": ("in", ids)})
+        existing = await LoginLogCRUD(self.auth).get_list(search={"id": ("in", ids)})
         existing_map = {obj.id for obj in existing}
         for nid in ids:
             if nid not in existing_map:
@@ -128,7 +129,7 @@ class OperationLogService:
     async def delete(self, ids: list[int]) -> None:
         if len(ids) < 1:
             raise CustomException(msg="删除失败，删除对象不能为空")
-        existing = await OperationLogCRUD(self.auth).list(search={"id": ("in", ids)})
+        existing = await OperationLogCRUD(self.auth).get_list(search={"id": ("in", ids)})
         existing_map = {obj.id for obj in existing}
         for nid in ids:
             if nid not in existing_map:

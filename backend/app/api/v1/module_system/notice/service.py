@@ -28,12 +28,12 @@ class NoticeService:
     async def detail(self, id: int) -> NoticeOutSchema:
         return await NoticeCRUD(self.auth).get_or_404(id=id, out_schema=NoticeOutSchema)
 
-    async def list(
+    async def get_list(
         self,
         search: NoticeQueryParam | None = None,
         order_by: list[dict] | None = None,
     ) -> list[NoticeOutSchema]:
-        notice_obj_list = await NoticeCRUD(self.auth).list(search=vars(search) if search else None, order_by=order_by)
+        notice_obj_list = await NoticeCRUD(self.auth).get_list(search=vars(search) if search else None, order_by=order_by)
         return [NoticeOutSchema.model_validate(notice_obj) for notice_obj in notice_obj_list]
 
     async def page(
@@ -79,7 +79,7 @@ class NoticeService:
     async def delete(self, ids: list[int]) -> None:
         if len(ids) < 1:
             raise CustomException(msg="删除失败，删除对象不能为空")
-        notices = await NoticeCRUD(self.auth).list(search={"id": ("in", ids)})
+        notices = await NoticeCRUD(self.auth).get_list(search={"id": ("in", ids)})
         notice_map = {n.id: n for n in notices}
         for nid in ids:
             if nid not in notice_map:

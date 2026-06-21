@@ -53,7 +53,9 @@
             :perm-delete="['module_system:ticket:delete']"
             :perm-patch="['module_system:ticket:patch']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
@@ -358,6 +360,9 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<TicketTable>();
 
+const createLoading = ref(false);
+const moreLoading = ref(false);
+
 // ─── 对话框状态 ───
 const { dialogVisible } = useCrudDialog();
 
@@ -468,6 +473,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } = use
     await refreshData();
   },
 });
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 const ticketDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -753,7 +767,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -761,10 +775,13 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
+    moreLoading.value = true;
     await TicketAPI.batchTicket({ ids, status });
     await refreshData();
   } catch {
     // 用户取消
+  } finally {
+    moreLoading.value = false;
   }
 }
 </script>

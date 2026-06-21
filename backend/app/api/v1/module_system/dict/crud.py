@@ -54,7 +54,7 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
         - int: 删除的记录数量
         """
         if exclude_system:
-            system_data = await self.list(
+            system_data = await self.get_list(
                 search={
                     "id__in": ids,
                     "remark__contains": "系统默认",
@@ -81,4 +81,4 @@ class DictDataCRUD(CRUDBase[DictDataModel, DictDataCreateSchema, DictDataUpdateS
         search = {"dict_type": dict_type}
         if status is not None:
             search["status"] = status
-        return await self.list(search=search, order_by=[{"id": "asc"}])
+        return await self.get_list(search=search, order_by=[{"id": "asc"}])

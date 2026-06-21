@@ -53,7 +53,7 @@ class WorkflowCRUD(CRUDBase[WorkflowModel, WorkflowCreateSchema, WorkflowUpdateS
         返回:
         - Sequence[WorkflowModel]: 工作流列表。
         """
-        return await self.list(search=search, order_by=order_by, preload=preload)
+        return await self.get_list(search=search, order_by=order_by, preload=preload)
 
     async def create_obj_crud(self, data: WorkflowCreateSchema) -> WorkflowModel | None:
         """

@@ -2,12 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
+from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
@@ -69,7 +69,7 @@ async def create_role_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:role:create"]))],
 ) -> JSONResponse:
     result_dict = await RoleService(auth).create(data=data)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    await cache_util.clear(namespace=_ROLE_NS)
     return SuccessResponse(data=result_dict, msg="创建角色成功")
 
 @RoleRouter.put(
@@ -83,7 +83,7 @@ async def update_role_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:role:update"]))],
 ) -> JSONResponse:
     result_dict = await RoleService(auth).update(id=id, data=data)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    await cache_util.clear(namespace=_ROLE_NS)
     return SuccessResponse(data=result_dict, msg="修改角色成功")
 
 @RoleRouter.delete(
@@ -96,7 +96,7 @@ async def delete_role_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:role:delete"]))],
 ) -> JSONResponse:
     await RoleService(auth).delete(ids=ids)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    await cache_util.clear(namespace=_ROLE_NS)
     return SuccessResponse(msg="删除角色成功")
 
 @RoleRouter.patch(
@@ -109,7 +109,7 @@ async def batch_set_available_role_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:role:patch"]))],
 ) -> JSONResponse:
     await RoleService(auth).set_available(data=data)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    await cache_util.clear(namespace=_ROLE_NS)
     return SuccessResponse(msg="批量修改角色状态成功")
 
 @RoleRouter.put(
@@ -122,7 +122,7 @@ async def set_role_permission_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:role:permission"]))],
 ) -> JSONResponse:
     await RoleService(auth).set_permission(data=data)
-    await FastAPICache.clear(namespace=_ROLE_NS)
+    await cache_util.clear(namespace=_ROLE_NS)
     return SuccessResponse(msg="授权角色成功")
 
 @RoleRouter.get(
@@ -134,7 +134,7 @@ async def export_role_list_controller(
     search: Annotated[RoleQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:role:export"]))],
 ) -> StreamingResponse:
-    role_query_result = await RoleService(auth).list(search=search)
+    role_query_result = await RoleService(auth).get_list(search=search)
     role_export_result = RoleService.export_list(role_list=role_query_result)
 
     return StreamResponse(

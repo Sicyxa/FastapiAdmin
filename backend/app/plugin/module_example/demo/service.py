@@ -30,12 +30,12 @@ class DemoService:
             raise CustomException(msg="该数据不存在")
         return DemoOutSchema.model_validate(obj)
 
-    async def list(
+    async def get_list(
         self,
         search: DemoQueryParam | None = None,
         order_by: list[dict[str, str]] | None = None,
     ) -> list[DemoOutSchema]:
-        obj_list = await DemoCRUD(self.auth).list(search=vars(search) if search else None, order_by=order_by)
+        obj_list = await DemoCRUD(self.auth).get_list(search=vars(search) if search else None, order_by=order_by)
         return [DemoOutSchema.model_validate(obj) for obj in obj_list]
 
     async def page(
@@ -76,7 +76,7 @@ class DemoService:
     async def delete(self, ids: list[int]) -> None:
         if len(ids) < 1:
             raise CustomException(msg="删除失败，删除对象不能为空")
-        objs = await DemoCRUD(self.auth).list(search={"id": ("in", ids)})
+        objs = await DemoCRUD(self.auth).get_list(search={"id": ("in", ids)})
         obj_map = {o.id: o for o in objs}
         for id_ in ids:
             if id_ not in obj_map:

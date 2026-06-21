@@ -45,7 +45,9 @@
             :perm-delete="['module_system:notice:delete']"
             :perm-patch="['module_system:notice:patch']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
@@ -284,6 +286,9 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<NoticeTable>();
 
+const createLoading = ref(false);
+const moreLoading = ref(false);
+
 // ─── 对话框状态 ───
 const { dialogVisible } = useCrudDialog();
 
@@ -381,6 +386,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
       await noticeStore.getNotice();
     },
   });
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 const noticeDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -648,7 +662,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -656,11 +670,14 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
+    moreLoading.value = true;
     await NoticeAPI.batchNotice({ ids, status });
     await refreshData();
     await noticeStore.getNotice();
   } catch {
-    ElMessage.info("操作取消");
+    // 用户取消或操作失败
+  } finally {
+    moreLoading.value = false;
   }
 }
 

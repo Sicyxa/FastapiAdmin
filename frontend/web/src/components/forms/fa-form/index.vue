@@ -90,6 +90,7 @@
                   @click="handleSubmit"
                   v-ripple
                   :disabled="disabledSubmit"
+                  :loading="loading"
                 >
                   {{ t("table.form.submit") }}
                 </ElButton>
@@ -177,6 +178,7 @@
                 @click="handleSubmit"
                 v-ripple
                 :disabled="disabledSubmit"
+                :loading="loading"
               >
                 {{ t("table.form.submit") }}
               </ElButton>
@@ -296,6 +298,8 @@ interface Props {
   showSubmit?: boolean;
   /** 是否禁用提交按钮 */
   disabledSubmit?: boolean;
+  /** 提交按钮 loading（防止重复提交） */
+  loading?: boolean;
   /** 提交时是否清洗空值 */
   sanitizeOutput?: Partial<SanitizeOutputOptions>;
   /** 是否需要内置 ElScrollbar 包裹 */
@@ -329,6 +333,7 @@ const props = withDefaults(defineProps<Props>(), {
   showReset: true,
   showSubmit: true,
   disabledSubmit: false,
+  loading: false,
   sanitizeOutput: () => ({}),
   scrollbar: false,
   maxHeight: "75vh",

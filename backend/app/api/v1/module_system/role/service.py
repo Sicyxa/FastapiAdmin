@@ -37,7 +37,7 @@ class RoleService:
         """
         return await RoleCRUD(self.auth).get_or_404(id=id, out_schema=RoleOutSchema)
 
-    async def list(
+    async def get_list(
         self,
         search: RoleQueryParam | None = None,
         order_by: list[dict[str, str]] | None = None,
@@ -52,7 +52,7 @@ class RoleService:
         返回:
         - list[RoleOutSchema]: 角色响应模型列表
         """
-        role_list = await RoleCRUD(self.auth).list(search=vars(search) if search else None, order_by=order_by)
+        role_list = await RoleCRUD(self.auth).get_list(search=vars(search) if search else None, order_by=order_by)
         return [RoleOutSchema.model_validate(role) for role in role_list]
 
     async def page(
@@ -141,7 +141,7 @@ class RoleService:
             raise CustomException(msg="删除失败，删除对象不能为空")
 
         # 批量校验角色存在性
-        roles = await RoleCRUD(self.auth).list(search={"id": ("in", ids)})
+        roles = await RoleCRUD(self.auth).get_list(search={"id": ("in", ids)})
         if len(roles) != len(ids):
             raise CustomException(msg="删除失败，部分ID不存在")
 
@@ -179,7 +179,7 @@ class RoleService:
         返回:
         - None
         """
-        roles = await RoleCRUD(self.auth).list(search={"id": ("in", data.ids)})
+        roles = await RoleCRUD(self.auth).get_list(search={"id": ("in", data.ids)})
         role_map = {r.id: r for r in roles}
         for rid in data.ids:
             if rid not in role_map:

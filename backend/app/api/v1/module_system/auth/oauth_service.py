@@ -8,8 +8,6 @@
 环境变量见 Settings 中 OAUTH_* 字段。
 """
 
-from __future__ import annotations
-
 import json
 import secrets
 from typing import Any, Literal

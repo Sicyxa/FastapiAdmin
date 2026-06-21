@@ -41,7 +41,9 @@
               :perm-delete="['module_platform:menu:delete']"
               :perm-patch="['module_platform:menu:patch']"
               :delete-loading="batchDeleting"
-              @add="handleOpenDialog('create')"
+              :create-loading="createLoading"
+              :more-loading="moreLoading"
+              @add="handleAdd"
               @delete="handleBatchDelete"
               @more="handleMoreClick"
             />
@@ -497,6 +499,8 @@ const selectedIds = computed(() =>
 );
 const batchDeleting = ref(false);
 const submitLoading = ref(false);
+const createLoading = ref(false);
+const moreLoading = ref(false);
 
 const menuOptions = ref<OptionType[]>([]);
 const fullMenuTree = ref<MenuTable[]>([]);
@@ -1124,6 +1128,15 @@ async function handleCloseDialog() {
   await resetForm();
 }
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 async function handleOpenDialog(
   type: "create" | "update" | "detail",
   id?: number,
@@ -1222,13 +1235,13 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
     return;
   }
-  ElMessageBox.confirm(`确认${status === "0" ? "启用" : "停用"}该项数据?`, "警告", {
+  ElMessageBox.confirm(`确认${status === 0 ? "启用" : "停用"}该项数据?`, "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
@@ -1239,10 +1252,13 @@ async function handleMoreClick(status: string) {
       cancelButtonText: "取消",
       type: "warning",
     });
+    moreLoading.value = true;
     await MenuAPI.batchMenu({ ids, status });
     await loadMenuData();
   } catch {
     // 用户取消
+  } finally {
+    moreLoading.value = false;
   }
 }
 

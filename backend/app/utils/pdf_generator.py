@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
-from weasyprint import CSS, HTML
 
 
 def render_html_template(
@@ -37,6 +36,8 @@ def html_to_pdf(html_str: str, css_str: str | None = None) -> bytes:
     """
     将 HTML 字符串转换为 PDF 字节流
 
+    需要 weasyprint + 系统 libgobject（安装: brew install glib pango）。
+
     参数:
     - html_str (str): HTML 内容
     - css_str (str | None): 可选的内联 CSS 字符串
@@ -44,6 +45,8 @@ def html_to_pdf(html_str: str, css_str: str | None = None) -> bytes:
     返回:
     - bytes: PDF 字节流
     """
+    from weasyprint import CSS, HTML
+
     html = HTML(string=html_str, base_url=".")
     if css_str:
         return html.write_pdf(stylesheets=[CSS(string=css_str)])

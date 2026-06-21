@@ -190,7 +190,7 @@ declare global {
    */
   interface BatchType {
     ids: number[];
-    status: string;
+    status: number;
   }
 
   /**

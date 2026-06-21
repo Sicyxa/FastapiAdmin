@@ -34,7 +34,8 @@
             :perm-create="['module_system:tenant:create']"
             :perm-delete="['module_system:tenant:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -355,6 +356,8 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 
 const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<TenantTable>();
 
+const createLoading = ref(false);
+
 async function deleteTenantRow(id: number) {
   try {
     await confirmDelete();
@@ -597,6 +600,15 @@ function brandCropBind(key: string) {
       };
     default:
       return {};
+  }
+}
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
   }
 }
 

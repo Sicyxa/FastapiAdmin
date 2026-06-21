@@ -129,7 +129,7 @@ class MenuService:
         if len(ids) < 1:
             raise CustomException(msg="删除失败，删除对象不能为空")
 
-        all_menus = await MenuCRUD(self.auth).list()
+        all_menus = await MenuCRUD(self.auth).get_list()
         child_id_map = get_child_id_map(model_list=all_menus)
 
         delete_ids_set = set()
@@ -142,7 +142,7 @@ class MenuService:
 
     @require_superadmin
     async def set_available(self, data: BatchSetAvailable) -> None:
-        menu_list = await MenuCRUD(self.auth).list()
+        menu_list = await MenuCRUD(self.auth).get_list()
         total_ids = []
 
         if data.status == 0:

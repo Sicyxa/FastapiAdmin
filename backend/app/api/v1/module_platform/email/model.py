@@ -95,7 +95,13 @@ class EmailLogModel(ModelMixin, TenantMixin, UserMixin):
     biz_type: Mapped[str] = mapped_column(String(50), nullable=False, default="other", comment="业务类型（register/reset_password/invite/expiry_warning/ticket_reply/other）")
     error_msg: Mapped[str | None] = mapped_column(Text, nullable=True, default=None, comment="失败原因")
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, comment="重试次数")
-    tenant_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True, comment="关联租户 ID（可为空，如平台注册邮件）")
+    tenant_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("platform_tenant.id", ondelete="SET NULL", onupdate="CASCADE"),
+        nullable=True,
+        index=True,
+        comment="关联租户 ID（可为空，如平台注册邮件）",
+    )
     sent_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, default=None, comment="实际发送时间")
     status: Mapped[int] = mapped_column(Integer, default=0, nullable=False, comment="状态(0:启动 1:停用)", index=True)
     description: Mapped[str | None] = mapped_column(Text, default=None, nullable=True, comment="备注")

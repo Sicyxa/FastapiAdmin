@@ -2,12 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 
 from app.common.response import ResponseSchema, SuccessResponse
+from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission
 from app.core.router_class import OperationLogRoute
 
@@ -66,7 +66,7 @@ async def create_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_package:package:create"]))],
 ) -> JSONResponse:
     result_dict = await PackageService(auth).create(data=data)
-    await FastAPICache.clear(namespace=_PKG_NS)
+    await cache_util.clear(namespace=_PKG_NS)
     return SuccessResponse(data=result_dict, msg="创建成功")
 
 @PackageRouter.put(
@@ -80,7 +80,7 @@ async def update_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_package:package:update"]))],
 ) -> JSONResponse:
     result_dict = await PackageService(auth).update(id=id, data=data)
-    await FastAPICache.clear(namespace=_PKG_NS)
+    await cache_util.clear(namespace=_PKG_NS)
     return SuccessResponse(data=result_dict, msg="更新成功")
 
 @PackageRouter.delete(
@@ -93,7 +93,7 @@ async def delete_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_package:package:delete"]))],
 ) -> JSONResponse:
     await PackageService(auth).delete(ids=ids)
-    await FastAPICache.clear(namespace=_PKG_NS)
+    await cache_util.clear(namespace=_PKG_NS)
     return SuccessResponse(msg="删除成功")
 
 @PackageRouter.patch(
@@ -107,7 +107,7 @@ async def set_available_controller(
 ) -> JSONResponse:
     for id in data.ids:
         await PackageService(auth).update(id=id, data=PackageUpdateSchema(status=data.status))
-    await FastAPICache.clear(namespace=_PKG_NS)
+    await cache_util.clear(namespace=_PKG_NS)
     return SuccessResponse(msg="状态设置成功")
 
 @PackageRouter.get(

@@ -15,7 +15,6 @@
             super().__init__(model=OrderModel, session=session)
 """
 
-import builtins
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, TypeVar
@@ -193,7 +192,7 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         except Exception as e:
             raise CustomException(msg=f"统计失败: {e!s}")
 
-    async def list(
+    async def get_list(
         self,
         search: dict | None = None,
         order_by: list[dict[str, str]] | None = None,
@@ -227,9 +226,9 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
     async def tree_list(
         self,
         search: dict | None = None,
-        order_by: builtins.list[dict[str, str]] | None = None,
+        order_by: list[dict[str, str]] | None = None,
         children_attr: str | None = None,
-        preload: builtins.list[str | Any] | None = None,
+        preload: list[str | Any] | None = None,
     ) -> Sequence[ModelType]:
         """
         获取树形结构数据列表（复用请求级事务会话）
@@ -271,10 +270,10 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         self,
         offset: int,
         limit: int,
-        order_by: builtins.list[dict[str, str]],
+        order_by: list[dict[str, str]],
         search: dict,
         out_schema: type[OutSchemaType] | None = None,
-        preload: builtins.list[str | Any] | None = None,
+        preload: list[str | Any] | None = None,
     ) -> PageResultSchema:
         """
         获取分页数据（复用请求级事务会话；count 与 data 共享同一会话）
@@ -413,7 +412,7 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         except Exception as e:
             raise CustomException(msg=f"更新失败: {e!s}")
 
-    async def delete(self, ids: builtins.list[int]) -> None:
+    async def delete(self, ids: list[int]) -> None:
         """软删除对象（有认证时填充删除人 + 租户隔离）"""
         try:
             pk = self._get_pk_col()
@@ -449,7 +448,7 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         except Exception as e:
             raise CustomException(msg=f"清空失败: {e!s}")
 
-    async def set(self, ids: builtins.list[int], **kwargs) -> None:
+    async def set(self, ids: list[int], **kwargs) -> None:
         """批量更新字段（带租户隔离）"""
         try:
             pk = self._get_pk_col()
@@ -461,7 +460,7 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         except Exception as e:
             raise CustomException(msg=f"批量更新失败: {e!s}")
 
-    async def restore(self, ids: builtins.list[int]) -> None:
+    async def restore(self, ids: list[int]) -> None:
         """恢复软删除对象（带租户隔离）"""
         try:
             if not self._supports_soft_delete:
@@ -487,7 +486,7 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         filter_obj = Permission(model=self.model, auth=self.auth)
         return await filter_obj.filter_query(sql)
 
-    def _platform_shared_conditions(self) -> builtins.list[ColumnElement]:
+    def _platform_shared_conditions(self) -> list[ColumnElement]:
         if not self.auth or not self.auth.user:
             return []
         tid = self.auth.user.tenant_id
@@ -507,8 +506,8 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
                 return sql.where(getattr(self.model, "tenant_id") == tid)
         return sql
 
-    async def __build_conditions(self, **kwargs) -> builtins.list[ColumnElement]:
-        conditions: builtins.list[ColumnElement] = []
+    async def __build_conditions(self, **kwargs) -> list[ColumnElement]:
+        conditions: list[ColumnElement] = []
 
         if hasattr(self.model, "is_deleted"):
             conditions.append(getattr(self.model, "is_deleted") == False)  # noqa: E712
@@ -572,8 +571,8 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         return conditions
 
     def _parse_order(
-        self, order: builtins.list[dict[str, str]]
-    ) -> builtins.list[ColumnElement]:
+        self, order: list[dict[str, str]]
+    ) -> list[ColumnElement]:
         """
         解析排序参数
 
@@ -583,7 +582,7 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         返回:
         - 排序表达式列表
         """
-        columns: builtins.list[ColumnElement] = []
+        columns: list[ColumnElement] = []
         for item in order:
             for field, direction in item.items():
                 column = getattr(self.model, field)
@@ -591,8 +590,8 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         return columns
 
     def __loader_options(
-        self, preload: builtins.list[str | Any] | None = None
-    ) -> builtins.list[Any]:
+        self, preload: list[str | Any] | None = None
+    ) -> list[Any]:
         """
         构建预加载选项
 
@@ -602,7 +601,7 @@ class CRUDBase[ModelType: MappedBase, CreateSchemaType: BaseModel, UpdateSchemaT
         返回:
         - 预加载选项列表
         """
-        options: builtins.list[Any] = []
+        options: list[Any] = []
         model_loader_options = getattr(self.model, "__loader_options__", [])
 
         all_preloads: set[str | Any] = set(model_loader_options)

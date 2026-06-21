@@ -35,7 +35,8 @@
             :perm-export="['module_system:param:export']"
             :perm-delete="['module_system:param:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
           />
@@ -233,6 +234,8 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<ConfigTable>();
 
+const createLoading = ref(false);
+
 // ─── 对话框状态 ───
 const { dialogVisible } = useCrudDialog();
 
@@ -307,6 +310,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
       await configStore.getConfig();
     },
   });
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 const paramDialogFormItems = computed<FormItem[]>(() => [
   {

@@ -36,7 +36,9 @@
             :perm-delete="['module_system:dict_type:delete']"
             :perm-patch="['module_system:dict_type:patch']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
@@ -234,6 +236,9 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<DictTable>();
 
+const createLoading = ref(false);
+const moreLoading = ref(false);
+
 // ─── 对话框状态 ───
 const { dialogVisible } = useCrudDialog();
 
@@ -305,6 +310,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } = use
     }
   },
 });
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 const dictDialogFormItems = computed<FormItem[]>(() => [
   {
@@ -548,7 +562,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -556,6 +570,7 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
+    moreLoading.value = true;
     await DictAPI.batchDictType({ ids, status });
     await refreshData();
     dictStore.clearDictData();
@@ -563,6 +578,8 @@ async function handleMoreClick(status: string) {
     if (dictTypes.length > 0) await dictStore.getDict(dictTypes);
   } catch {
     // 用户取消
+  } finally {
+    moreLoading.value = false;
   }
 }
 </script>

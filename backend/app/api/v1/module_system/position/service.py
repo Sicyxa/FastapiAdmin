@@ -24,12 +24,12 @@ class PositionService:
     async def detail(self, id: int) -> PositionOutSchema:
         return await PositionCRUD(self.auth).get_or_404(id=id, out_schema=PositionOutSchema)
 
-    async def list(
+    async def get_list(
         self,
         search: PositionQueryParam | None = None,
         order_by: list[dict] | None = None,
     ) -> list[PositionOutSchema]:
-        position_list = await PositionCRUD(self.auth).list(search=vars(search) if search else None, order_by=order_by)
+        position_list = await PositionCRUD(self.auth).get_list(search=vars(search) if search else None, order_by=order_by)
         return [PositionOutSchema.model_validate(position) for position in position_list]
 
     async def page(
@@ -66,7 +66,7 @@ class PositionService:
     async def delete(self, ids: list[int]) -> None:
         if len(ids) < 1:
             raise CustomException(msg="删除失败，删除对象不能为空")
-        positions = await PositionCRUD(self.auth).list(search={"id": ("in", ids)})
+        positions = await PositionCRUD(self.auth).get_list(search={"id": ("in", ids)})
         position_map = {p.id: p for p in positions}
         for pid in ids:
             if pid not in position_map:
@@ -74,7 +74,7 @@ class PositionService:
         await PositionCRUD(self.auth).delete(ids=ids)
 
     async def set_available(self, data: BatchSetAvailable) -> None:
-        positions = await PositionCRUD(self.auth).list(search={"id": ("in", data.ids)})
+        positions = await PositionCRUD(self.auth).get_list(search={"id": ("in", data.ids)})
         position_map = {p.id: p for p in positions}
         for pid in data.ids:
             if pid not in position_map:

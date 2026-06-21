@@ -2,13 +2,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 from redis.asyncio.client import Redis
 
 from app.common.response import ResponseSchema, SuccessResponse
+from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission, redis_getter
 from app.core.router_class import OperationLogRoute
 
@@ -74,7 +74,7 @@ async def create_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:create"]))],
 ) -> JSONResponse:
     result_dict = await TenantService(auth).create(data=data)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(data=result_dict, msg="创建租户成功")
 
 @TenantRouter.put(
@@ -88,7 +88,7 @@ async def update_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:update"]))],
 ) -> JSONResponse:
     result_dict = await TenantService(auth).update(id=id, data=data)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(data=result_dict, msg="修改租户成功")
 
 @TenantRouter.delete(
@@ -101,7 +101,7 @@ async def delete_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:delete"]))],
 ) -> JSONResponse:
     await TenantService(auth).delete(ids=ids)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(msg="删除租户成功")
 
 @TenantRouter.patch(
@@ -114,7 +114,7 @@ async def batch_set_available_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:patch"]))],
 ) -> JSONResponse:
     await TenantService(auth).set_available(data=data)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(msg="批量修改租户状态成功")
 
 @TenantRouter.put(
@@ -127,7 +127,7 @@ async def toggle_tenant_status_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:patch"]))],
 ) -> JSONResponse:
     await TenantService(auth).toggle_status(id=id)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(msg="修改租户状态成功")
 
 @TenantRouter.get(
@@ -154,7 +154,7 @@ async def add_tenant_user_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:create"]))],
 ) -> JSONResponse:
     await TenantService(auth).add_tenant_user(tenant_id=id, data=data)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(msg="添加用户成功")
 
 @TenantRouter.delete(
@@ -168,7 +168,7 @@ async def remove_tenant_user_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:delete"]))],
 ) -> JSONResponse:
     await TenantService(auth).remove_tenant_user(tenant_id=id, user_id=uid)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(msg="移除用户成功")
 
 @TenantRouter.get(
@@ -207,7 +207,7 @@ async def update_tenant_config_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:update"]))],
 ) -> JSONResponse:
     result = await TenantService(auth).update_config(redis=redis, tenant_id=id, config=data)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(data=result, msg="更新租户配置成功")
 
 @TenantRouter.put(
@@ -221,7 +221,7 @@ async def renew_tenant_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:tenant:update"]))],
 ) -> JSONResponse:
     result = await TenantService(auth).renew(tenant_id=id, end_time=data.end_time)
-    await FastAPICache.clear(namespace=_TENANT_NS)
+    await cache_util.clear(namespace=_TENANT_NS)
     return SuccessResponse(data=result, msg="租户续期成功")
 
 @TenantRouter.get(

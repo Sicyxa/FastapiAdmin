@@ -34,7 +34,8 @@
             :perm-create="['module_ai:chat:create']"
             :perm-delete="['module_ai:chat:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -247,6 +248,8 @@ const editingTitle = ref("");
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<ChatSession>();
 
+const createLoading = ref(false);
+
 async function deleteSessionRow(id: string) {
   try {
     await confirmDelete();
@@ -435,6 +438,15 @@ async function resetForm() {
 async function handleCloseDialog() {
   closeDialog();
   await resetForm();
+}
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
 }
 
 async function handleOpenDialog(type: "create" | "detail", id?: string) {

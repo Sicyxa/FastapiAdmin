@@ -1,7 +1,3 @@
-"""健康检查 Schema"""
-
-from __future__ import annotations
-
 from pydantic import BaseModel, Field
 
 

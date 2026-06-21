@@ -4,19 +4,19 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.response import ErrorResponse, ResponseSchema, SuccessResponse
 from app.config.setting import settings
+from app.core import cache_util
 from app.core.base_schema import (
     AuthSchema,
     JWTOutSchema,
     LogoutPayloadSchema,
     RefreshTokenPayloadSchema,
 )
+from app.core.cache_util import cache
 from app.core.dependencies import db_getter, get_current_user, redis_getter
 from app.core.exceptions import CustomException
 from app.core.logger import logger
@@ -180,7 +180,7 @@ async def select_tenant_controller(
     redis: Annotated[Redis, Depends(redis_getter)],
 ) -> JSONResponse:
     result = await LoginService(auth).select_tenant(request=request, redis=redis, tenant_id=data.tenant_id)
-    await FastAPICache.clear(namespace=_AUTH_TENANTS_NS)
+    await cache_util.clear(namespace=_AUTH_TENANTS_NS)
     return SuccessResponse(data=result, msg="租户切换成功")
 
 

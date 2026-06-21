@@ -8,7 +8,7 @@ from app.core.exceptions import CustomException
 from app.core.logger import logger
 
 from .crud import InvoiceCRUD
-from .pdf_helper import _render_invoice_pdf
+from .pdf_helper import _render_invoice_pdf, _render_oss_license_pdf
 from .schema import (
     InvoiceApplySchema,
     InvoiceCreateSchema,
@@ -134,6 +134,16 @@ class InvoiceTenantService:
             raise CustomException(msg="发票未开具或无PDF")
         return invoice.pdf_url
 
+    @classmethod
+    async def download_license(cls, auth: AuthSchema, invoice_id: int, tenant_id: int) -> str:
+        crud = InvoiceCRUD(auth)
+        invoice = await crud.get_or_404(id=invoice_id, msg="发票不存在")
+        if hasattr(invoice, "tenant_id") and invoice.tenant_id != tenant_id:
+            raise CustomException(msg="发票不存在")
+        if not invoice.oss_license_pdf_url:
+            raise CustomException(msg="开源授权函 PDF 不存在，请先开票")
+        return invoice.oss_license_pdf_url
+
 
 class InvoicePlatformService:
     """平台端发票服务"""
@@ -166,7 +176,14 @@ class InvoicePlatformService:
         )
 
     @classmethod
-    async def issue(cls, auth: AuthSchema, invoice_id: int, pdf_url: str, api_response: str) -> InvoiceOutSchema:
+    async def issue(
+        cls,
+        auth: AuthSchema,
+        invoice_id: int,
+        pdf_url: str,
+        api_response: str,
+        oss_license_pdf_url: str = "",
+    ) -> InvoiceOutSchema:
         """
         平台开具发票
 
@@ -175,6 +192,7 @@ class InvoicePlatformService:
         - invoice_id (int): 发票 ID
         - pdf_url (str): PDF 下载地址
         - api_response (str): 第三方 API 响应
+        - oss_license_pdf_url (str): 授权函 PDF 地址（手动模式可空，自动模式自动渲染）
 
         返回:
         - InvoiceOutSchema: 发票信息
@@ -186,9 +204,10 @@ class InvoicePlatformService:
         if invoice.status != 0:
             raise CustomException(msg="仅待开票状态可操作")
 
-        # 调用开票服务：本地 WeasyPrint 渲染 PDF（对接百望云/票通时替换为远程调用）
+        # 调用开票服务：本地 WeasyPrint 渲染发票 PDF + 开源授权函 PDF（独立两个文件）
         try:
             pdf_url_result = _render_invoice_pdf(invoice)
+            oss_license_pdf_url_result = _render_oss_license_pdf(invoice)
             api_response_result = json.dumps(
                 {
                     "code": "SUCCESS",
@@ -216,6 +235,7 @@ class InvoicePlatformService:
             InvoiceUpdateSchema(
                 status=1,
                 pdf_url=pdf_url or pdf_url_result,
+                oss_license_pdf_url=oss_license_pdf_url or oss_license_pdf_url_result,
                 api_response=api_response or api_response_result,
             ),
         )

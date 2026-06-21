@@ -1,5 +1,3 @@
-"""订单与支付 Service"""
-
 import random
 from datetime import datetime, timedelta
 
@@ -474,7 +472,7 @@ class PaymentService:
                 raise CustomException(msg=f"降级失败：当前租户已有 {current} 个{label}，超过目标套餐限额 {limit}")
 
     @classmethod
-    async def _send_order_email(cls, auth: AuthSchema, order: "OrderModel", product: object, tenant: object, order_type_label: str = "") -> None:
+    async def _send_order_email(cls, auth: AuthSchema, order: OrderModel, product: object, tenant: object, order_type_label: str = "") -> None:
         """
         发送购买确认邮件（失败静默降级）
 

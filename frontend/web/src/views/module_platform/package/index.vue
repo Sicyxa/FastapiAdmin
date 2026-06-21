@@ -35,7 +35,9 @@
             :perm-delete="['module_package:package:delete']"
             :perm-patch="['module_package:package:update']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
           />
@@ -278,6 +280,9 @@ const pkgSearchItems = computed<SearchFormItem[]>(() => [
 
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const { selectedIds, batchDeleting, onTableSelectionChange } = useTableSelection<PackageTable>();
+
+const createLoading = ref(false);
+const moreLoading = ref(false);
 
 const opCtx = {
   onDetail: (id: number) => void handleOpenDialog("detail", id),
@@ -591,6 +596,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
     onUpdateSuccess: refreshCreate,
   });
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 async function deletePkgRow(id: number) {
   try {
     await confirmDelete();
@@ -606,7 +620,7 @@ async function togglePkgStatus(row: PackageTable) {
   const newStatus = row.status === 0 ? 1 : 0;
   const label = newStatus === 0 ? "启用" : "禁用";
   try {
-    await confirmToggleStatus(label);
+    await confirmToggleStatus(newStatus);
     await PackageAPI.batchPackageStatus({ ids: [row.id!], status: Number(newStatus) });
     ElMessage.success(`${label}成功`);
     await refreshData();

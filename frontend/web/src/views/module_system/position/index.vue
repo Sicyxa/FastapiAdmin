@@ -45,7 +45,9 @@
             :perm-delete="['module_system:position:delete']"
             :perm-patch="['module_system:position:patch']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
@@ -355,6 +357,9 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<PositionTable>();
 
+const createLoading = ref(false);
+const moreLoading = ref(false);
+
 const opCtx = {
   onDetail: (id: number) => void handleOpenDialog("detail", id),
   onEdit: (id: number) => void handleOpenDialog("update", id),
@@ -528,6 +533,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } =
     },
   });
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 const positionDialogFormItems = computed<FormItem[]>(() => [
   {
     label: "岗位名称",
@@ -622,7 +636,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -630,11 +644,14 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
+    moreLoading.value = true;
     await PositionAPI.batchPosition({ ids, status });
     await refreshData();
     await userStore.getUserInfo();
   } catch {
     // 用户取消
+  } finally {
+    moreLoading.value = false;
   }
 }
 </script>

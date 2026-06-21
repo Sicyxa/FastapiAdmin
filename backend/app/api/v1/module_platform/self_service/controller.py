@@ -1,5 +1,3 @@
-"""租户自助服务 Controller — 对应 PRD §20.20"""
-
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query

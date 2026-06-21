@@ -2,12 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
+from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission
 from app.core.router_class import OperationLogRoute
 from app.utils.common_util import bytes2file_response
@@ -68,7 +68,7 @@ async def create_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:create"]))],
 ) -> JSONResponse:
     result_dict = await PositionService(auth).create(data=data)
-    await FastAPICache.clear(namespace=_POS_NS)
+    await cache_util.clear(namespace=_POS_NS)
     return SuccessResponse(data=result_dict, msg="创建岗位成功")
 
 @PositionRouter.put(
@@ -82,7 +82,7 @@ async def update_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:update"]))],
 ) -> JSONResponse:
     result_dict = await PositionService(auth).update(id=id, data=data)
-    await FastAPICache.clear(namespace=_POS_NS)
+    await cache_util.clear(namespace=_POS_NS)
     return SuccessResponse(data=result_dict, msg="修改岗位成功")
 
 @PositionRouter.delete(
@@ -95,7 +95,7 @@ async def delete_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:delete"]))],
 ) -> JSONResponse:
     await PositionService(auth).delete(ids=ids)
-    await FastAPICache.clear(namespace=_POS_NS)
+    await cache_util.clear(namespace=_POS_NS)
     return SuccessResponse(msg="删除岗位成功")
 
 @PositionRouter.patch(
@@ -108,7 +108,7 @@ async def batch_set_available_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:patch"]))],
 ) -> JSONResponse:
     await PositionService(auth).set_available(data=data)
-    await FastAPICache.clear(namespace=_POS_NS)
+    await cache_util.clear(namespace=_POS_NS)
     return SuccessResponse(msg="批量修改岗位状态成功")
 
 @PositionRouter.get(
@@ -120,7 +120,7 @@ async def export_obj_list_controller(
     search: Annotated[PositionQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:position:export"]))],
 ) -> StreamingResponse:
-    position_query_result = await PositionService(auth).list(search=search)
+    position_query_result = await PositionService(auth).get_list(search=search)
     position_export_result = PositionService.export_list(position_list=position_query_result)
 
     return StreamResponse(

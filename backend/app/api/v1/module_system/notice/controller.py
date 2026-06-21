@@ -2,12 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 
 from app.common.response import ResponseSchema, StreamResponse, SuccessResponse
+from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, BatchSetAvailable, PageResultSchema
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission, get_current_user
 from app.core.logger import logger
 from app.core.router_class import OperationLogRoute
@@ -66,7 +66,7 @@ async def create_notice_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:create"]))],
 ) -> JSONResponse:
     result_dict = await NoticeService(auth).create(data=data)
-    await FastAPICache.clear(namespace=_NOTICE_NS)
+    await cache_util.clear(namespace=_NOTICE_NS)
     return SuccessResponse(data=result_dict, msg="创建公告成功")
 
 @NoticeRouter.put(
@@ -80,7 +80,7 @@ async def update_notice_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:update"]))],
 ) -> JSONResponse:
     result_dict = await NoticeService(auth).update(id=id, data=data)
-    await FastAPICache.clear(namespace=_NOTICE_NS)
+    await cache_util.clear(namespace=_NOTICE_NS)
     return SuccessResponse(data=result_dict, msg="修改公告成功")
 
 @NoticeRouter.delete(
@@ -93,7 +93,7 @@ async def delete_notice_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:delete"]))],
 ) -> JSONResponse:
     await NoticeService(auth).delete(ids=ids)
-    await FastAPICache.clear(namespace=_NOTICE_NS)
+    await cache_util.clear(namespace=_NOTICE_NS)
     return SuccessResponse(msg="删除公告成功")
 
 @NoticeRouter.patch(
@@ -106,7 +106,7 @@ async def batch_set_available_notice_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:patch"]))],
 ) -> JSONResponse:
     await NoticeService(auth).set_available(data=data)
-    await FastAPICache.clear(namespace=_NOTICE_NS)
+    await cache_util.clear(namespace=_NOTICE_NS)
     return SuccessResponse(msg="批量修改公告状态成功")
 
 @NoticeRouter.post(
@@ -117,7 +117,7 @@ async def export_notice_list_controller(
     search: Annotated[NoticeQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:notice:export"]))],
 ) -> StreamingResponse:
-    result_dict_list = await NoticeService(auth).list(search=search)
+    result_dict_list = await NoticeService(auth).get_list(search=search)
     export_data = [item.model_dump() for item in result_dict_list]
     export_result = NoticeService.export(notice_list=export_data)
 
@@ -163,7 +163,7 @@ async def mark_read_controller(
 ) -> JSONResponse:
     """标记已读。通过 `sys_notice_read` 表记录已读时间。"""
     await NoticeService(auth).mark_read(notice_id=id)
-    await FastAPICache.clear(namespace=_NOTICE_NS)
+    await cache_util.clear(namespace=_NOTICE_NS)
     logger.info(f"用户[{auth.user.id}]标记通知[{id}]已读")
     return SuccessResponse(msg="标记已读成功")
 
@@ -177,7 +177,7 @@ async def mark_all_read_controller(
 ) -> JSONResponse:
     """全部标记已读。返回本次操作标记的数量。"""
     count = await NoticeService(auth).mark_all_read()
-    await FastAPICache.clear(namespace=_NOTICE_NS)
+    await cache_util.clear(namespace=_NOTICE_NS)
     logger.info(f"用户[{auth.user.id}]全部已读, 数量={count}")
     return SuccessResponse(data=count, msg=f"全部标记已读成功，共标记 {count} 条")
 

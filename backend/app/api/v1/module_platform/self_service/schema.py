@@ -1,5 +1,3 @@
-"""租户自助服务 Schema"""
-
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field

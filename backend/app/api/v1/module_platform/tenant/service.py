@@ -1,3 +1,4 @@
+
 import json
 import random
 import string
@@ -206,13 +207,13 @@ class TenantService:
 
         for tid in ids:
             reasons: list[str] = []
-            if await UserCRUD(self.auth).list(search={"tenant_id": tid}):
+            if await UserCRUD(self.auth).get_list(search={"tenant_id": tid}):
                 reasons.append("用户")
-            if await DeptCRUD(self.auth).list(search={"tenant_id": tid}):
+            if await DeptCRUD(self.auth).get_list(search={"tenant_id": tid}):
                 reasons.append("部门")
-            if await RoleCRUD(self.auth).list(search={"tenant_id": tid}):
+            if await RoleCRUD(self.auth).get_list(search={"tenant_id": tid}):
                 reasons.append("角色")
-            if await PositionCRUD(self.auth).list(search={"tenant_id": tid}):
+            if await PositionCRUD(self.auth).get_list(search={"tenant_id": tid}):
                 reasons.append("岗位")
             if reasons:
                 raise CustomException(msg=f"租户下已存在{'/'.join(reasons)}，操作失败")

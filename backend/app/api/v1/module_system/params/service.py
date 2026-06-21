@@ -78,7 +78,7 @@ class ParamsService:
             raise CustomException(msg="该数据不存在")
         return obj.config_value
 
-    async def list(
+    async def get_list(
         self,
         search: ParamsQueryParam | None = None,
         order_by: list[dict] | None = None,
@@ -93,7 +93,7 @@ class ParamsService:
         返回:
         - list[ParamsOutSchema]: 参数响应模型列表
         """
-        obj_list = await ParamsCRUD(self.auth).list(search=vars(search) if search else None, order_by=order_by)
+        obj_list = await ParamsCRUD(self.auth).get_list(search=vars(search) if search else None, order_by=order_by)
         return [ParamsOutSchema.model_validate(obj) for obj in obj_list]
 
     async def page(
@@ -215,7 +215,7 @@ class ParamsService:
         if len(ids) < 1:
             raise CustomException(msg="删除失败，删除对象不能为空")
         # 批量校验参数存在性
-        objs = await ParamsCRUD(self.auth).list(search={"id": ("in", ids)})
+        objs = await ParamsCRUD(self.auth).get_list(search={"id": ("in", ids)})
         obj_map = {o.id: o for o in objs}
         for pid in ids:
             obj = obj_map.get(pid)
@@ -235,7 +235,7 @@ class ParamsService:
                 logger.error(f"删除系统配置失败: {e}")
                 raise CustomException(msg="同步删除缓存失败") from e
 
-    async def batch_set_status(self, ids: list[int], status: str) -> None:
+    async def batch_set_status(self, ids: list[int], status: int) -> None:
         """
         批量设置系统参数状态
 
@@ -297,7 +297,7 @@ class ParamsService:
         async with async_db_session() as session:
             async with session.begin():
                 init_auth = AuthSchema(db=session, check_data_scope=False)
-                config_obj = await ParamsCRUD(init_auth).list()
+                config_obj = await ParamsCRUD(init_auth).get_list()
                 if not config_obj:
                     raise CustomException(msg="该数据不存在")
                 try:
@@ -349,7 +349,7 @@ class ParamsService:
             async with async_db_session() as session:
                 async with session.begin():
                     init_auth = AuthSchema(db=session, check_data_scope=False)
-                    config_obj = await ParamsCRUD(init_auth).list()
+                    config_obj = await ParamsCRUD(init_auth).get_list()
                     if config_obj:
                         try:
                             for config in config_obj:

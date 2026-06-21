@@ -117,7 +117,7 @@ async def delete_param_controller(
 )
 async def batch_set_status_controller(
     ids: Annotated[list[int], Body(description="参数ID列表")],
-    status: Annotated[str, Body(description="状态值")],
+    status: Annotated[int, Body(description="状态值")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:patch"]))],
 ) -> JSONResponse:
     await ParamsService(auth).batch_set_status(ids=ids, status=status)
@@ -132,7 +132,7 @@ async def export_param_list_controller(
     search: Annotated[ParamsQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:param:export"]))],
 ) -> StreamingResponse:
-    result_dict_list = await ParamsService(auth).list(search=search)
+    result_dict_list = await ParamsService(auth).get_list(search=search)
     export_data = [item.model_dump() for item in result_dict_list]
     export_result = ParamsService.export(data_list=export_data)
 

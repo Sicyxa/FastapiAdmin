@@ -51,7 +51,7 @@ class JobCRUD(CRUDBase[JobModel, JobCreateSchema, JobUpdateSchema]):
         返回:
         - Sequence[JobModel]: 执行日志模型序列
         """
-        return await self.list(search=search, order_by=order_by, preload=preload)
+        return await self.get_list(search=search, order_by=order_by, preload=preload)
 
     async def create_obj_crud(self, data: JobCreateSchema) -> JobModel | None:
         """

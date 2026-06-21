@@ -2,12 +2,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Query
 from fastapi.responses import JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 
 from app.common.response import ResponseSchema, SuccessResponse
+from app.core import cache_util
 from app.core.base_params import PaginationQueryParam
 from app.core.base_schema import AuthSchema, PageResultSchema
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission
 from app.core.router_class import OperationLogRoute
 
@@ -67,7 +67,7 @@ async def plugin_create_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:plugin:create"]))],
 ) -> JSONResponse:
     r = await PluginService(auth).create(data=data)
-    await FastAPICache.clear(namespace=_PLUGIN_NS)
+    await cache_util.clear(namespace=_PLUGIN_NS)
     return SuccessResponse(data=r, msg="创建成功")
 
 
@@ -82,7 +82,7 @@ async def plugin_update_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:plugin:update"]))],
 ) -> JSONResponse:
     r = await PluginService(auth).update(id=id, data=data)
-    await FastAPICache.clear(namespace=_PLUGIN_NS)
+    await cache_util.clear(namespace=_PLUGIN_NS)
     return SuccessResponse(data=r, msg="更新成功")
 
 
@@ -96,7 +96,7 @@ async def plugin_delete_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:plugin:delete"]))],
 ) -> JSONResponse:
     await PluginService(auth).delete(ids=ids)
-    await FastAPICache.clear(namespace=_PLUGIN_NS)
+    await cache_util.clear(namespace=_PLUGIN_NS)
     return SuccessResponse(msg="删除成功")
 
 
@@ -125,7 +125,7 @@ async def plugin_install_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:plugin:install"]))],
 ) -> JSONResponse:
     await PluginService(auth).install(plugin_id=data.plugin_id)
-    await FastAPICache.clear(namespace=_PLUGIN_NS)
+    await cache_util.clear(namespace=_PLUGIN_NS)
     return SuccessResponse(msg="安装成功")
 
 
@@ -139,7 +139,7 @@ async def plugin_uninstall_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:plugin:uninstall"]))],
 ) -> JSONResponse:
     await PluginService(auth).uninstall(plugin_id=data.plugin_id)
-    await FastAPICache.clear(namespace=_PLUGIN_NS)
+    await cache_util.clear(namespace=_PLUGIN_NS)
     return SuccessResponse(msg="卸载成功")
 
 
@@ -153,7 +153,7 @@ async def plugin_toggle_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:plugin:toggle"]))],
 ) -> JSONResponse:
     await PluginService(auth).toggle(plugin_id=data.plugin_id)
-    await FastAPICache.clear(namespace=_PLUGIN_NS)
+    await cache_util.clear(namespace=_PLUGIN_NS)
     return SuccessResponse(msg="操作成功")
 
 
@@ -178,5 +178,5 @@ async def plugin_reload_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:plugin:reload"]))],
 ) -> JSONResponse:
     msg = PluginService.reload()
-    await FastAPICache.clear(namespace=_PLUGIN_NS)
+    await cache_util.clear(namespace=_PLUGIN_NS)
     return SuccessResponse(data=msg, msg="重载成功")

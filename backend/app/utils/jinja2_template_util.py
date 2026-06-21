@@ -11,8 +11,8 @@ from app.plugin.module_generator.gencode.schema import (
     GenTableColumnOutSchema,
     GenTableOutSchema,
 )
-from app.plugin.module_generator.gencode.tools.gen_util import GenUtils
 from app.utils.common_util import CamelCaseUtil, SnakeCaseUtil
+from app.utils.gen_util import GenUtils
 from app.utils.string_util import StringUtil
 
 

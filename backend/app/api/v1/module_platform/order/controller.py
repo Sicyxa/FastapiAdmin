@@ -1,5 +1,3 @@
-"""订单与支付 Controller"""
-
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path, Query, Request

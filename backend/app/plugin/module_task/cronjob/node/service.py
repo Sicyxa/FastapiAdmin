@@ -39,7 +39,7 @@ class NodeService:
         obj = await NodeCRUD(self.auth).get_obj_by_id_crud(id=id)
         return NodeOutSchema.model_validate(obj)
 
-    async def list(
+    async def get_list(
         self,
         search: NodeQueryParam | None = None,
         order_by: list[dict[str, str]] | None = None,
@@ -141,7 +141,7 @@ class NodeService:
 
         return {"job_id": id, "status": "executed", "trigger": trigger}
 
-    async def batch_set_status(self, ids: list[int], status: str) -> None:
+    async def batch_set_status(self, ids: list[int], status: int) -> None:
         if not ids:
             raise CustomException(msg="请选择要操作的数据")
 

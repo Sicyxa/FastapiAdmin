@@ -1,4 +1,3 @@
-"""租户自助服务 Service"""
 
 from datetime import datetime, timedelta
 

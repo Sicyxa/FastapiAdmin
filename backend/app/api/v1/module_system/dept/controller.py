@@ -2,11 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 
 from app.common.response import ResponseSchema, SuccessResponse
+from app.core import cache_util
 from app.core.base_schema import AuthSchema, BatchSetAvailable
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission
 from app.core.router_class import OperationLogRoute
 
@@ -53,7 +53,7 @@ async def create_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dept:create"]))],
 ) -> JSONResponse:
     result_dict = await DeptService(auth).create(data=data)
-    await FastAPICache.clear(namespace=_DEPT_NS)
+    await cache_util.clear(namespace=_DEPT_NS)
     return SuccessResponse(data=result_dict, msg="创建部门成功")
 
 @DeptRouter.put(
@@ -67,7 +67,7 @@ async def update_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dept:update"]))],
 ) -> JSONResponse:
     result_dict = await DeptService(auth).update(id=id, data=data)
-    await FastAPICache.clear(namespace=_DEPT_NS)
+    await cache_util.clear(namespace=_DEPT_NS)
     return SuccessResponse(data=result_dict, msg="修改部门成功")
 
 @DeptRouter.delete(
@@ -80,7 +80,7 @@ async def delete_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dept:delete"]))],
 ) -> JSONResponse:
     await DeptService(auth).delete(ids=ids)
-    await FastAPICache.clear(namespace=_DEPT_NS)
+    await cache_util.clear(namespace=_DEPT_NS)
     return SuccessResponse(msg="删除部门成功")
 
 @DeptRouter.patch(
@@ -93,5 +93,5 @@ async def batch_set_available_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:dept:patch"]))],
 ) -> JSONResponse:
     await DeptService(auth).batch_set_available(data=data)
-    await FastAPICache.clear(namespace=_DEPT_NS)
+    await cache_util.clear(namespace=_DEPT_NS)
     return SuccessResponse(msg="批量修改部门状态成功")

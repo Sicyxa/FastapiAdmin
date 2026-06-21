@@ -146,7 +146,7 @@ async def execute_job_controller(
 )
 async def batch_set_status_controller(
     ids: Annotated[list[int], Body(description="节点ID列表")],
-    status: Annotated[str, Body(description="状态值")],
+    status: Annotated[int, Body(description="状态值")],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_task:cronjob:node:update"]))],
 ) -> JSONResponse:
     service = NodeService(auth)

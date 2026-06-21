@@ -1,3 +1,4 @@
+
 from app.core.base_schema import AuthSchema, BatchSetAvailable
 from app.core.exceptions import CustomException
 from app.utils.common_util import (
@@ -83,7 +84,7 @@ class DeptService:
             raise CustomException(msg="删除失败，删除对象不能为空")
 
         # 获取所有部门列表，用于构建树形关系
-        all_depts = await DeptCRUD(self.auth).list()
+        all_depts = await DeptCRUD(self.auth).get_list()
 
         # 构建子部门ID映射
         child_id_map = get_child_id_map(model_list=all_depts)
@@ -95,7 +96,7 @@ class DeptService:
         await DeptCRUD(self.auth).delete(ids=ids)
 
     async def batch_set_available(self, data: BatchSetAvailable) -> None:
-        dept_list = await DeptCRUD(self.auth).list()
+        dept_list = await DeptCRUD(self.auth).get_list()
         total_ids = []
 
         if data.status == 0:

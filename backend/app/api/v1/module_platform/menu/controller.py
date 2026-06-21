@@ -2,11 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Path
 from fastapi.responses import JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.decorator import cache
 
 from app.common.response import ResponseSchema, SuccessResponse
+from app.core import cache_util
 from app.core.base_schema import AuthSchema, BatchSetAvailable
+from app.core.cache_util import cache
 from app.core.dependencies import AuthPermission
 from app.core.router_class import OperationLogRoute
 
@@ -56,7 +56,7 @@ async def create_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:create"]))],
 ) -> JSONResponse:
     result_dict = await MenuService(auth).create(data=data)
-    await FastAPICache.clear(namespace=_MENU_NS)
+    await cache_util.clear(namespace=_MENU_NS)
     return SuccessResponse(data=result_dict, msg="创建菜单成功")
 
 
@@ -71,7 +71,7 @@ async def update_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:update"]))],
 ) -> JSONResponse:
     result_dict = await MenuService(auth).update(id=id, data=data)
-    await FastAPICache.clear(namespace=_MENU_NS)
+    await cache_util.clear(namespace=_MENU_NS)
     return SuccessResponse(data=result_dict, msg="修改菜单成功")
 
 
@@ -85,7 +85,7 @@ async def delete_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:delete"]))],
 ) -> JSONResponse:
     await MenuService(auth).delete(ids=ids)
-    await FastAPICache.clear(namespace=_MENU_NS)
+    await cache_util.clear(namespace=_MENU_NS)
     return SuccessResponse(msg="删除菜单成功")
 
 
@@ -99,5 +99,5 @@ async def batch_set_available_obj_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_platform:menu:patch"]))],
 ) -> JSONResponse:
     await MenuService(auth).set_available(data=data)
-    await FastAPICache.clear(namespace=_MENU_NS)
+    await cache_util.clear(namespace=_MENU_NS)
     return SuccessResponse(msg="批量修改菜单状态成功")

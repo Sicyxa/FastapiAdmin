@@ -67,7 +67,7 @@ class EmailConfigService:
         if not ids:
             raise CustomException(msg="删除对象不能为空")
         crud = EmailConfigCRUD(self.auth)
-        configs = await crud.list(search={"id": ("in", ids)})
+        configs = await crud.get_list(search={"id": ("in", ids)})
         for obj in configs:
             if obj.is_default:
                 raise CustomException(msg=f"配置「{obj.name}」是默认配置，请先将其他配置设为默认后再删除")

@@ -117,7 +117,7 @@ async def export_obj_list_controller(
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_example:demo:export"]))],
 ) -> StreamingResponse:
     service = DemoService(auth)
-    result_dict_list = await service.list(search=search)
+    result_dict_list = await service.get_list(search=search)
     export_result = DemoService.batch_export(obj_list=result_dict_list)
 
     return StreamResponse(

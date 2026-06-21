@@ -35,7 +35,8 @@
             :perm-create="['module_task:cronjob:node:create']"
             :perm-delete="['module_task:cronjob:node:delete']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @delete="handleBatchDelete"
           />
         </template>
@@ -528,6 +529,7 @@ const executeFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const nodeFormRenderKey = ref(0);
 const executeFormRenderKey = ref(0);
 const submitLoading = ref(false);
+const createLoading = ref(false);
 const openCron = ref(false);
 const openInterval = ref(false);
 const codeEditorRef = ref<CmComponentRef>();
@@ -783,6 +785,15 @@ async function resetForm() {
 async function handleCloseDialog() {
   dialogVisible.visible = false;
   resetForm();
+}
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
 }
 
 async function handleOpenDialog(type: "create" | "update", id?: number) {

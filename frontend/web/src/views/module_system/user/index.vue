@@ -66,7 +66,9 @@
                 :perm-patch="['module_system:user:patch']"
                 :import-loading="uploadLoading"
                 :delete-loading="batchDeleting"
-                @add="handleOpenDialog('create')"
+                :create-loading="createLoading"
+                :more-loading="moreLoading"
+                @add="handleAdd"
                 @import="openImport"
                 @export="openExport"
                 @delete="handleBatchDelete"
@@ -352,6 +354,8 @@ const dataFormRef = ref<InstanceType<typeof FaForm> | null>(null);
 const userFormRenderKey = ref(0);
 const submitLoading = ref(false);
 const uploadLoading = ref(false);
+const createLoading = ref(false);
+const moreLoading = ref(false);
 const deptFilterId = ref<string | number | undefined>(undefined);
 
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "450px" : "90%"));
@@ -844,6 +848,15 @@ async function handleCloseDialog() {
   await resetForm();
 }
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
   dialogVisible.type = type;
   if (id) {
@@ -944,7 +957,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -952,13 +965,13 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
-    batchDeleting.value = true;
+    moreLoading.value = true;
     await UserAPI.batchUser({ ids, status });
     await refreshData();
   } catch {
     // 用户取消
   } finally {
-    batchDeleting.value = false;
+    moreLoading.value = false;
   }
 }
 </script>

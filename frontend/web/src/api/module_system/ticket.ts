@@ -30,7 +30,7 @@ const TicketAPI = {
       responseType: "blob",
     });
   },
-  batchTicket(body: { ids: number[]; status: string }) {
+  batchTicket(body: { ids: number[]; status: number }) {
     return request<ApiResponse>({ url: `${API_PATH}/batch`, method: "put", data: body });
   },
 };

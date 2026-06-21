@@ -1,7 +1,3 @@
-"""请求级上下文"""
-
-from __future__ import annotations
-
 from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from typing import Any

@@ -36,7 +36,9 @@
             :perm-delete="['module_system:role:delete']"
             :perm-patch="['module_system:role:patch']"
             :delete-loading="batchDeleting"
-            @add="handleOpenDialog('create')"
+            :create-loading="createLoading"
+            :more-loading="moreLoading"
+            @add="handleAdd"
             @export="openExport"
             @delete="handleBatchDelete"
             @more="handleMoreClick"
@@ -360,6 +362,9 @@ const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(n
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<RoleTable>();
 
+const createLoading = ref(false);
+const moreLoading = ref(false);
+
 const drawerVisible = ref(false);
 const checkedRole = ref({ id: 0, name: "" });
 
@@ -465,6 +470,15 @@ const { submitLoading, handleCloseDialog, handleOpenDialog, handleSubmit } = use
     await userStore.getUserInfo();
   },
 });
+
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await handleOpenDialog("create");
+  } finally {
+    createLoading.value = false;
+  }
+}
 
 const opCtx = {
   onPerm: handleOpenAssignPermDialog,
@@ -659,7 +673,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function handleMoreClick(status: string) {
+async function handleMoreClick(status: number) {
   const ids = selectedIds.value;
   if (!ids.length) {
     ElMessage.warning("请先选择要操作的数据");
@@ -667,12 +681,15 @@ async function handleMoreClick(status: string) {
   }
   try {
     await confirmToggleStatus(status);
+    moreLoading.value = true;
     await RoleAPI.batchRole({ ids, status });
     await refreshData();
     const userStore = useUserStore();
     await userStore.getUserInfo();
   } catch {
     // 用户取消
+  } finally {
+    moreLoading.value = false;
   }
 }
 </script>

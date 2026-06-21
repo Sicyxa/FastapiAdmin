@@ -54,7 +54,7 @@ class WorkflowNodeTypeCRUD(CRUDBase[WorkflowNodeTypeModel, WorkflowNodeTypeCreat
         返回:
         - Sequence[WorkflowNodeTypeModel]: 列表。
         """
-        return await self.list(search=search, order_by=order_by, preload=preload)
+        return await self.get_list(search=search, order_by=order_by, preload=preload)
 
     async def create_obj_crud(self, data: WorkflowNodeTypeCreateSchema) -> WorkflowNodeTypeModel | None:
         """

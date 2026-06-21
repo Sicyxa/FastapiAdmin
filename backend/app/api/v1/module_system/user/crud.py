@@ -38,9 +38,9 @@ class UserCRUD(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         返回:
         - None
         """
-        user_objs = await self.list(search={"id": ("in", user_ids)})
+        user_objs = await self.get_list(search={"id": ("in", user_ids)})
         if role_ids:
-            role_objs = await RoleCRUD(self.auth).list(search={"id": ("in", role_ids)})
+            role_objs = await RoleCRUD(self.auth).get_list(search={"id": ("in", role_ids)})
         else:
             role_objs = []
 
@@ -61,9 +61,9 @@ class UserCRUD(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         返回:
         - None
         """
-        user_objs = await self.list(search={"id": ("in", user_ids)})
+        user_objs = await self.get_list(search={"id": ("in", user_ids)})
         if position_ids:
-            position_objs = await PositionCRUD(self.auth).list(search={"id": ("in", position_ids)})
+            position_objs = await PositionCRUD(self.auth).get_list(search={"id": ("in", position_ids)})
         else:
             position_objs = []
 

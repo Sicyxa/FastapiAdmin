@@ -38,7 +38,8 @@
             :perm-delete="['module_example:demo:delete']"
             :perm-patch="['module_example:demo:patch']"
             :delete-loading="batchDeleting"
-            @add="openEditDialog('add')"
+            :create-loading="createLoading"
+            @add="handleAdd"
             @import="openImport"
             @export="openExport"
             @delete="handleBatchDelete"
@@ -249,6 +250,8 @@ const demoBusinessSearchItems = computed(() => [
 const faTableRef = ref<{ elTableRef?: { clearSelection: () => void } } | null>(null);
 const { selectedRows, selectedIds, batchDeleting, onTableSelectionChange } =
   useTableSelection<DemoTable>();
+
+const createLoading = ref(false);
 
 const {
   columns,
@@ -580,6 +583,15 @@ async function openDetailDialog(row: DemoTable) {
   dialogVisible.visible = true;
 }
 
+async function handleAdd() {
+  createLoading.value = true;
+  try {
+    await openEditDialog("add");
+  } finally {
+    createLoading.value = false;
+  }
+}
+
 async function openEditDialog(type: "add" | "edit", row?: DemoTable) {
   dialogVisible.type = type === "add" ? "create" : "update";
   if (type === "add") {
@@ -679,7 +691,7 @@ async function handleBatchDelete() {
   }
 }
 
-async function runBatchStatus(status: string) {
+async function runBatchStatus(status: number) {
   const ids = selectedIds.value;
   if (ids.length === 0) {
     ElMessage.warning("请先在列表中勾选数据");
@@ -687,7 +699,7 @@ async function runBatchStatus(status: string) {
   }
   try {
     await confirmAction(
-      `确认对选中的 ${ids.length} 条数据${status === "0" ? "启用" : "停用"}？`,
+      `确认对选中的 ${ids.length} 条数据${status === 0 ? "启用" : "停用"}？`,
       "批量设置"
     );
     await DemoAPI.batchDemo({ ids, status });

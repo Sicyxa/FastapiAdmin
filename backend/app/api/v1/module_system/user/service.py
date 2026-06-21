@@ -46,12 +46,12 @@ class UserService:
             result.dept_name = dept.name if dept else None
         return result
 
-    async def list(
+    async def get_list(
         self,
         search: UserQueryParam | None = None,
         order_by: list[dict[str, str]] | None = None,
     ) -> list[UserOutSchema]:
-        user_list = await UserCRUD(self.auth).list(search=vars(search) if search else None, order_by=order_by)
+        user_list = await UserCRUD(self.auth).get_list(search=vars(search) if search else None, order_by=order_by)
         return [UserOutSchema.model_validate(user) for user in user_list]
 
     async def page(
@@ -125,7 +125,7 @@ class UserService:
         new_user = await UserCRUD(self.auth).update(id=id, data=data)
 
         if data.role_ids and len(data.role_ids) > 0:
-            roles = await RoleCRUD(self.auth).list(search={"id": ("in", data.role_ids)})
+            roles = await RoleCRUD(self.auth).get_list(search={"id": ("in", data.role_ids)})
             if len(roles) != len(data.role_ids):
                 raise CustomException(msg="更新失败，部分角色不存在")
             if not all(role.status == 0 for role in roles):
@@ -133,7 +133,7 @@ class UserService:
             await UserCRUD(self.auth).set_user_roles(user_ids=[id], role_ids=data.role_ids)
 
         if data.position_ids and len(data.position_ids) > 0:
-            positions = await PositionCRUD(self.auth).list(search={"id": ("in", data.position_ids)})
+            positions = await PositionCRUD(self.auth).get_list(search={"id": ("in", data.position_ids)})
             if len(positions) != len(data.position_ids):
                 raise CustomException(msg="更新失败，部分岗位不存在")
             if not all(position.status == 0 for position in positions):
@@ -145,7 +145,7 @@ class UserService:
     async def delete(self, ids: list[int]) -> None:
         if len(ids) < 1:
             raise CustomException(msg="删除失败，删除对象不能为空")
-        users = await UserCRUD(self.auth).list(search={"id": ("in", ids)})
+        users = await UserCRUD(self.auth).get_list(search={"id": ("in", ids)})
         user_map = {u.id: u for u in users}
         for uid in ids:
             user = user_map.get(uid)

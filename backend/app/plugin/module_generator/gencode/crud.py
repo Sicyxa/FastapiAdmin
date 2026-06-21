@@ -70,7 +70,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         返回:
         - Sequence[GenTableModel]: 所有业务表信息列表。
         """
-        return await self.list(preload=preload)
+        return await self.get_list(preload=preload)
 
     async def get_gen_table_list(
         self,
@@ -87,7 +87,7 @@ class GenTableCRUD(CRUDBase[GenTableModel, GenTableSchema, GenTableSchema]):
         返回:
         - Sequence[GenTableModel]: 业务表列表信息。
         """
-        return await self.list(
+        return await self.get_list(
             search=vars(search) if search else None,
             order_by=[{"created_time": "desc"}],
             preload=preload,
@@ -511,7 +511,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         返回:
         - Sequence[GenTableColumnModel]: 业务表字段列表信息对象序列。
         """
-        return await self.list(search={"table_id": table_id}, order_by=order_by, preload=preload)
+        return await self.get_list(search={"table_id": table_id}, order_by=order_by, preload=preload)
 
     async def get_gen_db_table_columns_by_name(self, table_name: str | None) -> list[GenTableColumnOutSchema]:
         """
@@ -560,7 +560,7 @@ class GenTableColumnCRUD(CRUDBase[GenTableColumnModel, GenTableColumnSchema, Gen
         返回:
         - Sequence[GenTableColumnModel]: 业务表字段列表信息对象序列。
         """
-        return await self.list(search=search, order_by=order_by, preload=preload)
+        return await self.get_list(search=search, order_by=order_by, preload=preload)
 
     async def create_gen_table_column_crud(self, data: GenTableColumnSchema) -> GenTableColumnModel | None:
         """创建业务表字段。

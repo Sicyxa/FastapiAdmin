@@ -1,7 +1,3 @@
-"""支付网关 — 抽象基类 + 支付宝 + Mock + 工厂"""
-
-from __future__ import annotations
-
 import base64
 import json
 import uuid

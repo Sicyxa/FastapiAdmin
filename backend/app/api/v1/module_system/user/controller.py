@@ -212,7 +212,7 @@ async def export_user_list_controller(
     search: Annotated[UserQueryParam, Depends()],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_system:user:export"]))],
 ) -> StreamingResponse:
-    user_list = await UserService(auth).list(search=search, order_by=page.order_by)
+    user_list = await UserService(auth).get_list(search=search, order_by=page.order_by)
     user_export_result = UserService.export_list(user_list=user_list)
 
     return StreamResponse(

@@ -25,8 +25,8 @@ class RoleCRUD(CRUDBase[RoleModel, RoleCreateSchema, RoleUpdateSchema]):
         返回:
         - None
         """
-        roles = await self.list(search={"id": ("in", role_ids)})
-        menus = [] if not menu_ids else await MenuCRUD(self.auth).list(search={"id": ("in", menu_ids)})
+        roles = await self.get_list(search={"id": ("in", role_ids)})
+        menus = [] if not menu_ids else await MenuCRUD(self.auth).get_list(search={"id": ("in", menu_ids)})
 
         from app.api.v1.module_platform.package.service import PackageService
 
@@ -54,8 +54,8 @@ class RoleCRUD(CRUDBase[RoleModel, RoleCreateSchema, RoleUpdateSchema]):
         返回:
         - None
         """
-        roles = await self.list(search={"id": ("in", role_ids)})
-        depts = [] if not dept_ids else await DeptCRUD(self.auth).list(search={"id": ("in", dept_ids)})
+        roles = await self.get_list(search={"id": ("in", role_ids)})
+        depts = [] if not dept_ids else await DeptCRUD(self.auth).get_list(search={"id": ("in", dept_ids)})
 
         for obj in roles:
             relationship = obj.depts

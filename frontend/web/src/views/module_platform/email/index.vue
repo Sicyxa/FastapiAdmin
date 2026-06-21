@@ -36,7 +36,8 @@
                 :perm-create="['module_platform:email:update']"
                 :perm-delete="['module_platform:email:update']"
                 :delete-loading="configBatchDeleting"
-                @add="openConfigDialog('create')"
+                :create-loading="configCreateLoading"
+                @add="handleConfigAdd"
                 @delete="handleConfigBatchDelete"
               />
             </template>
@@ -89,7 +90,8 @@
                 :perm-create="['module_platform:email:update']"
                 :perm-delete="['module_platform:email:update']"
                 :delete-loading="templateBatchDeleting"
-                @add="openTemplateDialog('create')"
+                :create-loading="templateCreateLoading"
+                @add="handleTemplateAdd"
                 @delete="handleTemplateBatchDelete"
               />
             </template>
@@ -324,6 +326,8 @@ const {
   onTableSelectionChange: onConfigSelectionChange,
 } = useTableSelection<EmailConfigTable>();
 
+const configCreateLoading = ref(false);
+
 const {
   columns: configColumns,
   columnChecks: configColumnChecks,
@@ -447,6 +451,8 @@ const {
   batchDeleting: templateBatchDeleting,
   onTableSelectionChange: onTemplateSelectionChange,
 } = useTableSelection<EmailTemplateTable>();
+
+const templateCreateLoading = ref(false);
 
 const {
   columns: templateColumns,
@@ -699,6 +705,15 @@ const configDialogFormItems = computed<FormItem[]>(() => [
   },
 ]);
 
+async function handleConfigAdd() {
+  configCreateLoading.value = true;
+  try {
+    await openConfigDialog("create");
+  } finally {
+    configCreateLoading.value = false;
+  }
+}
+
 async function openConfigDialog(type: "create" | "update", row?: EmailConfigTable) {
   configDialogVisible.type = type;
   editingConfigId.value = row?.id ?? null;
@@ -831,6 +846,15 @@ const templateDialogFormItems = computed<FormItem[]>(() => [
     props: { rows: 2, maxlength: 255, placeholder: "可选" },
   },
 ]);
+
+async function handleTemplateAdd() {
+  templateCreateLoading.value = true;
+  try {
+    await openTemplateDialog("create");
+  } finally {
+    templateCreateLoading.value = false;
+  }
+}
 
 async function openTemplateDialog(type: "create" | "update", row?: EmailTemplateTable) {
   templateDialogVisible.type = type;
