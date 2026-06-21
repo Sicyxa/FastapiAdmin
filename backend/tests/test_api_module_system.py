@@ -3,9 +3,8 @@
 认证数据测试：admin 登录后验证 CRUD 真实数据。
 """
 
-from fastapi.testclient import TestClient
-
 from conftest import assert_route  # noqa: F401
+from fastapi.testclient import TestClient
 
 
 class TestAuth:

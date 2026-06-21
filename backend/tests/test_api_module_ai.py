@@ -5,9 +5,8 @@
 每个接口一个测试用例，覆盖会话 CRUD 与 AI 对话。
 """
 
-from fastapi.testclient import TestClient
-
 from conftest import assert_route
+from fastapi.testclient import TestClient
 
 
 class TestAiChat:

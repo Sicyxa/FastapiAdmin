@@ -97,17 +97,18 @@ def register_routers(app: FastAPI) -> None:
     from app.api.v1.module_monitor import monitor_router
     from app.api.v1.module_platform import platform_router
     from app.api.v1.module_system import system_router
-    from app.core.discover import get_dynamic_router, set_app_ref
+
+    app.include_router(common_router, dependencies=[Depends(RateLimiter(times=200, seconds=10))])
+    app.include_router(monitor_router, dependencies=[Depends(RateLimiter(times=200, seconds=10))])
+    app.include_router(platform_router, dependencies=[Depends(RateLimiter(times=200, seconds=10))])
+    app.include_router(system_router, dependencies=[Depends(RateLimiter(times=200, seconds=10))])
+
     from app.plugin.module_ai.chat.ws import WS_AI
-
-    for router in (common_router, system_router, platform_router, monitor_router):
-        app.include_router(router, dependencies=[Depends(RateLimiter(times=settings.RATE_LIMITER_TIMES, seconds=settings.RATE_LIMITER_SECONDS))])
-
-    app.include_router(router=get_dynamic_router(), dependencies=[Depends(RateLimiter(times=settings.RATE_LIMITER_TIMES, seconds=settings.RATE_LIMITER_SECONDS))])
+    app.include_router(router=WS_AI, dependencies=[Depends(WebSocketRateLimiter(times=200, seconds=10))])
+    
+    from app.core.discover import get_dynamic_router, set_app_ref
+    app.include_router(router=get_dynamic_router(), dependencies=[Depends(RateLimiter(times=200, seconds=10))])
     set_app_ref(app)
-
-    app.include_router(router=WS_AI, dependencies=[Depends(WebSocketRateLimiter(times=settings.WS_RATE_LIMITER_TIMES, seconds=settings.WS_RATE_LIMITER_SECONDS))])
-
 
 def register_files(app: FastAPI) -> None:
     if settings.STATIC_ENABLE:

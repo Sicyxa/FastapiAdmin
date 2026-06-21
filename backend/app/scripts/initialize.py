@@ -164,7 +164,7 @@ class InitializeData:
                 if table_name in ("sys_login_log", "sys_operation_log"):
                     count = await db.execute(select(func.count()).select_from(model))
                     if count.scalar():
-                        logger.info(f"⏭️  {table_name} 已有数据，跳过")
+                        logger.info(f"⏭️  跳过 {table_name} 表数据初始化（表已有数据）")
                         continue
                     objs = [model(**item) for item in data]
                     db.add_all(objs)

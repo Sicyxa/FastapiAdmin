@@ -3,9 +3,8 @@
 每个接口一个测试用例，验证路由存在且返回码正确。
 """
 
-from fastapi.testclient import TestClient
-
 from conftest import assert_route
+from fastapi.testclient import TestClient
 
 
 class TestHealth:

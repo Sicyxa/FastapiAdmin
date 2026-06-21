@@ -29,11 +29,11 @@ class OperationLogRoute(APIRoute):
     """操作日志路由 — 自动记录请求/响应并后台异步写入"""
 
     def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
-        original = super().get_route_handler()
+        original_route_handler = super().get_route_handler()
 
         async def custom_route_handler(request: Request) -> Response:
             start = time.time()
-            response: Response = await original(request)
+            response: Response = await original_route_handler(request)
 
             if not settings.OPERATION_LOG_RECORD or request.method not in settings.OPERATION_RECORD_METHOD:
                 return response

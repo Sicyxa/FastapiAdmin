@@ -186,10 +186,11 @@ async def _test_lifespan(app) -> AsyncGenerator[Any, None]:
     app.state.redis = _mock_redis
 
     # 将 admin 密码重置为已知密码 "admin123"
-    from app.core.database import async_db_session
-    from app.api.v1.module_system.user.model import UserModel
-    from app.utils.hash_bcrpy_util import PwdUtil
     from sqlalchemy import update
+
+    from app.api.v1.module_system.user.model import UserModel
+    from app.core.database import async_db_session
+    from app.utils.hash_bcrpy_util import PwdUtil
 
     async with async_db_session() as db:
         await db.execute(

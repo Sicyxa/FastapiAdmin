@@ -5,9 +5,8 @@
 每个接口一个测试用例，覆盖查询 / 新增 / 修改 / 删除 等操作。
 """
 
-from fastapi.testclient import TestClient
-
 from conftest import assert_route
+from fastapi.testclient import TestClient
 
 
 class TestGenerator:

@@ -250,8 +250,6 @@ class Settings(BaseSettings):
     REQUEST_LIMITER_REDIS_PREFIX: str = "fastapiadmin:request_limiter:"
     RATE_LIMITER_TIMES: int = 200
     RATE_LIMITER_SECONDS: int = 10
-    WS_RATE_LIMITER_TIMES: int = 1
-    WS_RATE_LIMITER_SECONDS: int = 5
 
     # ================================================= #
     # ******************* 重构配置 ******************* #
