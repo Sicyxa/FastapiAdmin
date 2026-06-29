@@ -46,13 +46,6 @@
       <!-- 背景泡泡 -->
       <div class="geo-element bg-bubble animate-scale-in" :style="'animation-delay: 0.5'"></div>
 
-      <!-- 太阳/月亮 -->
-      <div
-        class="geo-element circle-top-right animate-fade-in-down"
-        :style="'animation-delay: 0.5'"
-        @click="themeAnimation"
-      ></div>
-
       <!-- 装饰点 -->
       <div
         class="geo-element dot dot-top-left animate-bounce-in"
@@ -91,7 +84,6 @@ import { computed } from "vue";
 import AppConfig from "@/config";
 import loginIcon from "@fa_imgs/background.svg";
 import { useConfigStore } from "@stores";
-import { themeAnimation } from "@utils";
 
 defineOptions({ name: "FaLoginLeftView" });
 
@@ -431,39 +423,6 @@ $bg-mix-light-7: color-mix(in srgb, $primary-light-7 80%, $main-bg);
       border-radius: 50%;
     }
 
-    // 太阳/月亮效果
-    .circle-top-right {
-      top: 3%;
-      right: 3%;
-      z-index: 100;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      background: $bg-mix-light-7;
-      border-radius: 50%;
-      box-shadow: 0 0 20px rgba(#fffc00, 0.5);
-      transition: all 0.3s;
-
-      &::after {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 100%;
-        height: 100%;
-        content: "";
-        background: linear-gradient(to right, #fcbb04, #fffc00);
-        border-radius: 50%;
-        opacity: 1;
-        transform: translate(-50%, -50%);
-        transition: all 0.5s;
-      }
-
-      &:hover {
-        box-shadow: 0 0 36px #fffc00;
-        transform: scale(1.08);
-      }
-    }
-
     .square-bottom-right {
       right: 10%;
       bottom: 10%;
@@ -604,43 +563,6 @@ $bg-mix-light-7: color-mix(in srgb, $primary-light-7 80%, $main-bg);
   }
 
   .geometric-decorations {
-    // 月亮效果
-    .circle-top-right {
-      background-color: #f5f3d0;
-      box-shadow: 0 0 30px rgba(#fffc00, 0.35);
-      rotate: -48deg;
-      transition: all 0.3s ease-in-out 0.1s;
-
-      &::after {
-        opacity: 0;
-      }
-
-      &::before {
-        position: absolute;
-        top: 0;
-        left: 15px;
-        width: 50px;
-        height: 50px;
-        content: "";
-        background-color: color-mix(in srgb, $primary-light-9 60%, #070707);
-        border-radius: 50%;
-        transition: all 0.3s ease-in-out;
-      }
-
-      &:hover {
-        background-color: #fffc00;
-        box-shadow: 0 0 45px rgba(#fffc00, 0.6);
-
-        &::before {
-          left: 22px;
-        }
-
-        &::after {
-          opacity: 0;
-        }
-      }
-    }
-
     .bg-bubble {
       background-color: $bg-mix-light-9;
     }

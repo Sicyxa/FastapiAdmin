@@ -124,14 +124,6 @@
           <ElCheckbox v-model="loginForm.remember" class="login-remember">
             {{ $t("login.rememberPwd") }}
           </ElCheckbox>
-          <ElLink
-            type="primary"
-            underline="never"
-            class="inline-flex items-center text-sm leading-[inherit]!"
-            @click="$emit('forget')"
-          >
-            {{ $t("login.forgetPwd") }}
-          </ElLink>
         </div>
 
         <div>
@@ -146,24 +138,8 @@
           </ElButton>
         </div>
 
-        <div class="login-secondary-actions grid grid-cols-2 gap-2">
-          <ElButton class="login-secondary-btn" plain @click="$emit('openMobile')">
-            {{ $t("login.mobileLogin") }}
-          </ElButton>
-          <ElButton class="login-secondary-btn" plain @click="$emit('openQr')">
-            {{ $t("login.qrLogin") }}
-          </ElButton>
-        </div>
       </div>
     </ElForm>
-
-    <FaLoginThirdPartySection @oauth="$emit('oauth', $event)" />
-
-    <FaLoginAuthLinkRow
-      :hint="$t('login.noAccount')"
-      :link-text="$t('login.register')"
-      @link="$emit('register')"
-    />
   </div>
 </template>
 
@@ -198,11 +174,6 @@ interface Emits {
   submit: [];
   setupAccount: [key: AccountKey];
   getCaptcha: [];
-  openMobile: [];
-  openQr: [];
-  forget: [];
-  register: [];
-  oauth: [provider: "wechat" | "qq" | "github" | "gitee"];
 }
 
 const emit = defineEmits<Emits>();
