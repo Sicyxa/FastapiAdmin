@@ -74,6 +74,8 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
     ? [createBreadcrumbItem(currentRoute)]
     : matched.map(createBreadcrumbItem);
 
+  items = items.filter((item) => item.meta?.breadcrumb !== false);
+
   // 过滤包裹容器：如果有多个项目且第一个是容器路由（如 /outside），则移除它
   const firstItem = items[0];
   if (items.length > 1 && firstItem && isWrapperContainer(firstItem)) {

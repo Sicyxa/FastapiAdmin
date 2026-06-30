@@ -132,7 +132,7 @@ function createProgressBar(current: number, total: number, text: string, width =
   const emptyBar = "░".repeat(empty);
 
   process.stdout.write(
-    `\r  ${fmt.info("进度")} [${theme.success}${filledBar}${theme.gray}${emptyBar}${theme.reset}] ${fmt.highlight(percentage + "%")})}`
+    `\r  ${fmt.info("进度")} [${theme.success}${filledBar}${theme.gray}${emptyBar}${theme.reset}] ${fmt.highlight(percentage + "%")} ${fmt.dim(text)}`
   );
 
   if (current === total) {
@@ -158,6 +158,8 @@ const targets = [
   "src/views/safeguard",
   "src/views/dashboard/analysis",
   "src/views/dashboard/ecommerce",
+  "src/views/dashboard/home",
+  "src/views/dashboard/screen",
   "src/mock/json",
   "src/mock/temp/articleList.ts",
   "src/mock/temp/commentDetail.ts",
@@ -331,9 +333,6 @@ async function cleanLanguageFiles() {
         });
 
         if (langData.menus.dashboard) {
-          if (langData.menus.dashboard.analysis) {
-            delete langData.menus.dashboard.analysis;
-          }
           if (langData.menus.dashboard.ecommerce) {
             delete langData.menus.dashboard.ecommerce;
           }
@@ -369,15 +368,15 @@ async function cleanLanguageFiles() {
 
 // 清理快速入口组件
 async function cleanFastEnterComponent() {
-  const fastEnterPath = path.resolve(process.cwd(), "src/config/fastEnter.ts");
+  const fastEnterPath = path.resolve(process.cwd(), "src/config/modules/fastEnter.ts");
 
   try {
     const cleanedFastEnter = `/**
  * 快速入口配置
  * 包含：应用列表、快速链接等配置
  */
-import { WEB_LINKS } from "@utils/constants";
-import type { FastEnterConfig } from '@/types/config'
+import { WEB_LINKS } from "@utils";
+import type { FastEnterConfig } from "@/types/config";
 
 const fastEnterConfig: FastEnterConfig = {
   // 显示条件（屏幕宽度）
@@ -385,72 +384,72 @@ const fastEnterConfig: FastEnterConfig = {
   // 应用列表
   applications: [
     {
-      name: '工作台',
-      description: '系统概览与数据统计',
-      icon: 'ri:pie-chart-line',
-      iconColor: '#377dff',
+      name: "工作台",
+      description: "系统概览与数据统计",
+      icon: "ri:pie-chart-line",
+      iconColor: "#377dff",
       enabled: true,
       order: 1,
-      routeName: 'Console'
+      routeName: "DashboardWorkbench",
     },
     {
-      name: '官方文档',
-      description: '使用指南与开发文档',
-      icon: 'ri:bill-line',
-      iconColor: '#ffb100',
+      name: "官方文档",
+      description: "使用指南与开发文档",
+      icon: "ri:bill-line",
+      iconColor: "#ffb100",
       enabled: true,
       order: 2,
-      link: WEB_LINKS.DOCS
+      link: WEB_LINKS.DOCS,
     },
     {
-      name: '技术支持',
-      description: '技术支持与问题反馈',
-      icon: 'ri:user-location-line',
-      iconColor: '#ff6b6b',
+      name: "技术支持",
+      description: "技术支持与问题反馈",
+      icon: "ri:user-location-line",
+      iconColor: "#ff6b6b",
       enabled: true,
       order: 3,
-      link: WEB_LINKS.COMMUNITY
+      link: WEB_LINKS.COMMUNITY,
     },
     {
-      name: '哔哩哔哩',
-      description: '技术分享与交流',
-      icon: 'ri:bilibili-line',
-      iconColor: '#FB7299',
+      name: "哔哩哔哩",
+      description: "技术分享与交流",
+      icon: "ri:bilibili-line",
+      iconColor: "#FB7299",
       enabled: true,
       order: 4,
-      link: WEB_LINKS.BILIBILI
-    }
+      link: WEB_LINKS.BILIBILI,
+    },
   ],
   // 快速链接
   quickLinks: [
     {
-      name: '登录',
+      name: "登录",
       enabled: true,
       order: 1,
-      routeName: 'Login'
+      routeName: "Login",
     },
     {
-      name: '注册',
+      name: "注册",
       enabled: true,
       order: 2,
-      routeName: 'Login'
+      routeName: "Login",
     },
     {
-      name: '忘记密码',
+      name: "忘记密码",
       enabled: true,
       order: 3,
-      routeName: 'Login'
+      routeName: "Login",
     },
     {
-      name: '个人中心',
+      name: "个人中心",
       enabled: true,
       order: 4,
-      routeName: 'Profile'
-    }
-  ]
-}
+      routeName: "Profile",
+    },
+  ],
+};
 
-export default Object.freeze(fastEnterConfig)
+export default Object.freeze(fastEnterConfig);
 `;
 
     await fs.writeFile(fastEnterPath, cleanedFastEnter, "utf-8");
@@ -463,17 +462,18 @@ export default Object.freeze(fastEnterConfig)
 
 // 更新菜单接口
 async function updateMenuApi() {
-  const apiPath = path.resolve(process.cwd(), "src/api/system-manage.ts");
+  const apiPath = path.resolve(process.cwd(), "src/api/module_platform/menu.ts");
 
   try {
     const content = await fs.readFile(apiPath, "utf-8");
-    const updatedContent = content.replace(
-      "url: '/api/v3/system/menus'",
-      "url: '/api/v3/system/menus/simple'"
-    );
+    const updatedContent = content;
 
-    await fs.writeFile(apiPath, updatedContent, "utf-8");
-    console.log(`     ${icons.success} ${fmt.success("更新菜单接口完成")}`);
+    if (updatedContent === content) {
+      console.log(`     ${icons.info} ${fmt.dim("菜单接口已是当前模块结构，跳过更新")}`);
+    } else {
+      await fs.writeFile(apiPath, updatedContent, "utf-8");
+      console.log(`     ${icons.success} ${fmt.success("更新菜单接口完成")}`);
+    }
   } catch (err) {
     console.log(`     ${icons.error} ${fmt.error("更新菜单接口失败")}`);
     console.log(`     ${fmt.dim("错误详情: " + err)}`);
@@ -552,7 +552,7 @@ async function showCleanupWarning() {
     {
       icon: icons.bolt,
       name: "快速入口",
-      desc: "移除分析页、礼花效果、聊天、更新日志、定价、留言管理等无效项目",
+      desc: "重置为工作台、官方文档、技术支持等当前有效入口",
       color: theme.purple,
     },
   ];
@@ -660,29 +660,29 @@ async function main() {
   console.log();
 
   // 开始清理过程
-  console.log(`  ${fmt.badge("步骤 1/6", theme.bgBlue)} ${fmt.title("删除演示文件")}`);
+  console.log(`  ${fmt.badge("步骤 1/7", theme.bgBlue)} ${fmt.title("删除演示文件")}`);
   console.log();
   for (let i = 0; i < targets.length; i++) {
     await remove(targets[i], i);
   }
   console.log();
 
-  console.log(`  ${fmt.badge("步骤 2/6", theme.bgBlue)} ${fmt.title("清理路由模块")}`);
+  console.log(`  ${fmt.badge("步骤 2/7", theme.bgBlue)} ${fmt.title("清理路由模块")}`);
   console.log();
   await cleanRouteModules();
   console.log();
 
-  console.log(`  ${fmt.badge("步骤 3/6", theme.bgBlue)} ${fmt.title("重写路由常量")}`);
+  console.log(`  ${fmt.badge("步骤 3/7", theme.bgBlue)} ${fmt.title("重写路由常量")}`);
   console.log();
   await cleanRouterConstants();
   console.log();
 
-  console.log(`  ${fmt.badge("步骤 4/6", theme.bgBlue)} ${fmt.title("清空变更日志")}`);
+  console.log(`  ${fmt.badge("步骤 4/7", theme.bgBlue)} ${fmt.title("清空变更日志")}`);
   console.log();
   await cleanChangeLog();
   console.log();
 
-  console.log(`  ${fmt.badge("步骤 5/6", theme.bgBlue)} ${fmt.title("清理语言文件")}`);
+  console.log(`  ${fmt.badge("步骤 5/7", theme.bgBlue)} ${fmt.title("清理语言文件")}`);
   console.log();
   await cleanLanguageFiles();
   console.log();

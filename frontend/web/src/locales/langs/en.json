@@ -560,8 +560,13 @@
     },
     "dashboard": {
       "title": "Dashboard",
+      "work": "Workbench",
+      "assistant": "Xingyu AI Assistant",
+      "docs": "Document Center",
+      "transcribe": "Audio/Video Transcription",
+      "convert": "AI Document Conversion",
       "workplace": "Workplace",
-      "analysis": "Analysis",
+      "analysis": "Xingyu AI Assistant",
       "visualization": "3D Visualization",
       "pricing": "Pricing",
       "tutorial": "User manual"

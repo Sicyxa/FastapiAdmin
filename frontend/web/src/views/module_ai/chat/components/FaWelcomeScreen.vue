@@ -4,7 +4,7 @@
       <div class="ai-logo">
         <ElIcon size="64"><ChatDotRound /></ElIcon>
       </div>
-      <h1>FA智能助手</h1>
+      <h1>星宇智能助手</h1>
       <p class="welcome-subtitle">我是您的专属AI助手，可以帮您回答问题、处理任务和进行智能对话</p>
 
       <div class="example-prompts">

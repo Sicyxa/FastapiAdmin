@@ -560,8 +560,13 @@
     },
     "dashboard": {
       "title": "仪表盘",
+      "work": "工作台",
+      "assistant": "星宇智能助手",
+      "docs": "文档中心",
+      "transcribe": "音视频转写",
+      "convert": "AI文档转换",
       "workplace": "工作台",
-      "analysis": "分析页",
+      "analysis": "星宇智能助手",
       "visualization": "三维可视化",
       "pricing": "定价",
       "tutorial": "操作手册"

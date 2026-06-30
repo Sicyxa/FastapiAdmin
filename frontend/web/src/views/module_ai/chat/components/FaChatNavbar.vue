@@ -13,7 +13,7 @@
           class="size-6"
         />
       </button>
-      <span class="navbar-title">FA 助手</span>
+      <span class="navbar-title">星宇智能助手</span>
     </div>
 
     <div class="navbar-right">

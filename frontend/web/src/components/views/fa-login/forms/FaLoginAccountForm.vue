@@ -1,4 +1,4 @@
-<!-- 账号密码登录表单（含快捷账号、验证码、滑块） -->
+<!-- 账号密码登录表单（含快捷账号、验证码） -->
 <template>
   <div>
     <ElForm
@@ -96,30 +96,6 @@
       </ElFormItem>
 
       <div class="login-form-tail flex flex-col gap-[1.1rem]">
-        <div class="relative pb-3">
-          <div
-            class="relative z-2 overflow-hidden select-none rounded-lg border border-transparent transition duration-300"
-            :class="{ 'border-[#FF4E4F]!': !isPassing && isClickPass }"
-          >
-            <FaDragVerify
-              ref="dragVerifyRef"
-              v-model:value="isPassing"
-              :text="$t('login.sliderText')"
-              :text-color="dragVerifyTextColor"
-              :success-text="$t('login.sliderSuccessText')"
-              progress-bar-bg="var(--el-color-primary)"
-              :background="isDark ? '#26272F' : '#F1F1F4'"
-              handler-bg="var(--default-box-color)"
-            />
-          </div>
-          <p
-            class="absolute top-0 z-1 mt-2 px-px text-xs text-[#f56c6c] transition duration-300"
-            :class="{ 'translate-y-10': !isPassing && isClickPass }"
-          >
-            {{ $t("login.placeholder.slider") }}
-          </p>
-        </div>
-
         <div class="login-options-row flex items-center justify-between text-sm">
           <ElCheckbox v-model="loginForm.remember" class="login-remember">
             {{ $t("login.rememberPwd") }}
@@ -160,15 +136,10 @@ interface Props {
   demoAccountKey: AccountKey;
   accounts: Account[];
   formKey: number | string;
-  isDark: boolean;
-  dragVerifyTextColor: string;
   loading: boolean;
 }
 
 withDefaults(defineProps<Props>(), {});
-
-const isPassing = defineModel<boolean>("isPassing", { required: true });
-const isClickPass = defineModel<boolean>("isClickPass", { required: true });
 
 interface Emits {
   submit: [];
@@ -179,7 +150,6 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const formRef = ref();
-const dragVerifyRef = ref<{ reset?: () => void } | null>(null);
 const isCapsLock = ref(false);
 
 function onPasswordKeyup(event: KeyboardEvent) {
@@ -194,7 +164,6 @@ function onPasswordKeyup(event: KeyboardEvent) {
 defineExpose({
   validate: () => formRef.value?.validate?.(),
   clearValidate: () => formRef.value?.clearValidate?.(),
-  resetDragVerify: () => dragVerifyRef.value?.reset?.(),
 });
 </script>
 

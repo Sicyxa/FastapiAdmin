@@ -43,7 +43,7 @@ export const headerBarConfig: HeaderBarFeatureConfig = {
     description: "通知中心，显示系统通知和消息",
   },
   chat: {
-    enabled: true,
+    enabled: false,
     description: "聊天功能，提供实时沟通",
   },
   language: {
@@ -59,7 +59,7 @@ export const headerBarConfig: HeaderBarFeatureConfig = {
     description: "主题切换功能（明暗主题）",
   },
   sizeSelect: {
-    enabled: true,
+    enabled: false,
     description: "Element Plus 组件尺寸（默认/大/小）",
   },
 };

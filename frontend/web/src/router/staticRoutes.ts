@@ -13,18 +13,11 @@ import type { RouteRecordRaw } from "vue-router";
 import { RouterView, useRoute } from "vue-router";
 import { t } from "@wangeditor-next/editor";
 
-/** 首页 / 仪表盘父级 meta（侧栏、静态子路由共用） */
-export const HOME_MENU_META: RouteMeta = {
-  title: "menus.home.title",
-  icon: "ri:home-smile-2-line",
-  keepAlive: true,
-  fixedTab: true,
-};
-
 export const DASHBOARD_PARENT_META: RouteMeta = {
   title: "menus.dashboard.title",
   icon: "ri:pie-chart-line",
   alwaysShow: true,
+  breadcrumb: false,
 };
 
 /** iframe 路由注册表（与动态路由、守卫共用） */
@@ -81,7 +74,7 @@ export class IframeRouteManager {
 /** 根 Layout 的 route.name；动态路由 `addRoute` 父级须与此一致 */
 export const ROOT_LAYOUT_ROUTE_NAME = "RootLayout" as const;
 
-/** 静态首页子路由 name（面包屑等） */
+/** 兼容旧导入：当前不再注册独立首页路由 */
 export const HOME_ROUTE_NAME = "Home" as const;
 
 /** 目录占位：仅嵌一层 RouterView（与 ComponentLoader 中占位同源） */
@@ -146,46 +139,59 @@ const IframeView = defineComponent({
  */
 export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
   {
-    path: "workplace",
-    name: "DashboardWorkplace",
-    component: () => import("@views/dashboard/workplace/index.vue"),
+    path: "work",
+    name: "DashboardWorkbench",
+    component: () => import("@views/dashboard/work/index.vue"),
     meta: {
-      title: "menus.dashboard.workplace",
+      title: "menus.dashboard.work",
       icon: "ri:bar-chart-box-line",
       keepAlive: true,
     },
   },
   {
-    path: "analysis",
-    name: "DashboardAnalysis",
-    component: () => import("@views/dashboard/analysis/index.vue"),
+    path: "assistant",
+    name: "DashboardAiAssistant",
+    component: () => import("@views/module_ai/chat/index.vue"),
     meta: {
-      title: "menus.dashboard.analysis",
-      icon: "ri:align-item-bottom-line",
+      title: "menus.dashboard.assistant",
+      icon: "ri:message-2-line",
       keepAlive: false,
     },
   },
   {
-    path: "screen",
-    name: "DashboardScreen",
-    component: () => import("@views/dashboard/screen/index.vue"),
+    path: "docs",
+    name: "DashboardDocumentCenter",
+    component: () => import("@views/dashboard/docs/index.vue"),
     meta: {
-      title: "数据大屏",
-      icon: "ri:tv-line",
+      title: "menus.dashboard.docs",
+      icon: "ri:folder-3-line",
       keepAlive: false,
-      hidden: false,
+    },
+  },
+  {
+    path: "transcribe",
+    name: "DashboardAudioVideoTranscription",
+    component: () => import("@views/dashboard/transcribe/index.vue"),
+    meta: {
+      title: "menus.dashboard.transcribe",
+      icon: "ri:voiceprint-line",
+      keepAlive: false,
+    },
+  },
+  {
+    path: "convert",
+    name: "DashboardAiDocumentConversion",
+    component: () => import("@views/dashboard/convert/index.vue"),
+    meta: {
+      title: "menus.dashboard.convert",
+      icon: "ri:file-transfer-line",
+      keepAlive: false,
     },
   },
 ];
 
 // -----------------------------------------------------------------------------
-// 静态壳层菜单：后端未下发 /home、/dashboard 时补全侧栏；混合模式路由按 name 去重合并
-
-export const mergeShellHomeMenu: AppRouteRecord = {
-  path: "/home",
-  name: "Home",
-  meta: { ...HOME_MENU_META, shellRoute: true },
-};
+// 静态壳层菜单：后端未下发 /dashboard/* 时补全侧栏；混合模式路由按 name 去重合并
 
 /** 去掉组件与 redirect，供侧栏合并（菜单节点不需要懒加载引用） */
 function stripRouteRecordForShell(route: RouteRecordRaw): AppRouteRecord {
@@ -205,6 +211,12 @@ export function getDashboardMenuTreeForMerge(): AppRouteRecord {
     meta: DASHBOARD_PARENT_META,
     children: dashboardLayoutChildren.map(stripRouteRecordForShell),
   };
+}
+
+export function getDashboardTopLevelMenusForMerge(): AppRouteRecord[] {
+  return dashboardLayoutChildren.map((route) =>
+    dashboardRoutesToShellMenu(stripRouteRecordForShell(route), "/dashboard")
+  );
 }
 
 export function mergeAppRouteRecords(
@@ -245,6 +257,28 @@ function normalizeMenuPath(path?: string): string {
   return p.startsWith("/") ? p : `/${p}`;
 }
 
+function isPromotedAiAssistantMenu(item: AppRouteRecord): boolean {
+  const path = normalizeMenuPath(item.path as string);
+  return path === "/ai/chat" || (String(item.name ?? "") === "Chat" && path.endsWith("/ai/chat"));
+}
+
+function removePromotedAiAssistantMenu(items: AppRouteRecord[]): AppRouteRecord[] {
+  return items
+    .filter((item) => !isPromotedAiAssistantMenu(item))
+    .map((item) => {
+      if (!item.children?.length) return item;
+
+      const children = removePromotedAiAssistantMenu(item.children);
+      const next: AppRouteRecord = { ...item, children };
+
+      if (typeof next.redirect === "string" && normalizeMenuPath(next.redirect) === "/ai/chat") {
+        next.redirect = typeof children[0]?.path === "string" ? children[0].path : undefined;
+      }
+
+      return next;
+    });
+}
+
 function collectPathsAndNames(items: AppRouteRecord[], paths: Set<string>, names: Set<string>) {
   for (const r of items) {
     const np = normalizeMenuPath(r.path as string);
@@ -275,9 +309,10 @@ function dashboardRoutesToShellMenu(route: AppRouteRecord, parentAbs = ""): AppR
 }
 
 export function mergeShellRoutesIntoMenu(menuList: AppRouteRecord[]): AppRouteRecord[] {
+  const displayMenuList = removePromotedAiAssistantMenu(menuList);
   const paths = new Set<string>();
   const names = new Set<string>();
-  collectPathsAndNames(menuList, paths, names);
+  collectPathsAndNames(displayMenuList, paths, names);
 
   const additions: AppRouteRecord[] = [];
 
@@ -294,14 +329,14 @@ export function mergeShellRoutesIntoMenu(menuList: AppRouteRecord[]): AppRouteRe
     }
   };
 
-  tryPush(mergeShellHomeMenu);
-
-  if (!paths.has("/dashboard")) {
-    tryPush(dashboardRoutesToShellMenu(structuredClone(getDashboardMenuTreeForMerge())));
+  for (const item of getDashboardTopLevelMenusForMerge()) {
+    if (!paths.has(normalizeMenuPath(item.path as string))) {
+      tryPush(item);
+    }
   }
 
-  if (additions.length === 0) return menuList;
-  return [...additions, ...menuList];
+  if (additions.length === 0) return displayMenuList;
+  return [...additions, ...displayMenuList];
 }
 
 /**
@@ -360,21 +395,14 @@ export const staticRoutes: AppRouteRecordRaw[] = [
   {
     path: "/",
     name: ROOT_LAYOUT_ROUTE_NAME,
-    redirect: "/home",
+    redirect: "/dashboard/work",
     component: Layout,
     children: [
-      /** 首页（侧栏补入逻辑见同文件 `mergeShellRoutesIntoMenu`） */
-      {
-        path: "home",
-        name: HOME_ROUTE_NAME,
-        component: () => import("@views/dashboard/home/index.vue"),
-        meta: HOME_MENU_META,
-      },
       /** 仪表盘子路由定义见同文件导出的 `dashboardLayoutChildren` */
       {
         path: "dashboard",
         name: "Dashboard",
-        redirect: "/dashboard/workplace",
+        redirect: "/dashboard/work",
         component: NestedRouterParent,
         meta: DASHBOARD_PARENT_META,
         children: dashboardLayoutChildren,

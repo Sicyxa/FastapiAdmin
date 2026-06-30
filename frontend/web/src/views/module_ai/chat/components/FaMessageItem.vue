@@ -11,7 +11,7 @@
     <div class="message-content">
       <div class="message-header">
         <strong class="sender-name">
-          {{ message.type === "user" ? userName : "FA助手" }}
+          {{ message.type === "user" ? userName : "星宇智能助手" }}
         </strong>
         <ElButton
           v-if="message.content"

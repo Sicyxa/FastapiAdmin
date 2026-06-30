@@ -44,8 +44,6 @@
 
                     <FaLoginAccountForm
                       ref="accountFormRef"
-                      v-model:is-passing="isPassing"
-                      v-model:is-click-pass="isClickPass"
                       v-model:login-form="loginForm"
                       :rules="rules"
                       :captcha-state="captchaState"
@@ -53,8 +51,6 @@
                       :demo-account-key="demoAccountKey"
                       :accounts="accounts"
                       :form-key="formKey"
-                      :is-dark="isDark"
-                      :drag-verify-text-color="dragVerifyTextColor"
                       :loading="loading"
                       @submit="handleSubmit"
                       @setup-account="setupAccount"
@@ -145,7 +141,6 @@ defineOptions({ name: "Login" });
 const configStore = useConfigStore();
 const settingStore = useSettingsStore();
 const appStore = useAppStore();
-const { isDark } = storeToRefs(settingStore);
 const { t } = useI18n();
 
 const { panelAlign } = useLoginPanelAlign();
@@ -154,9 +149,6 @@ const panelTitle = computed(() => t("login.title"));
 const panelSubTitle = computed(() => t("login.subTitle"));
 const footerCopyright = "广西创启恒达科技有限公司版权所有";
 
-const dragVerifyTextColor = computed(() =>
-  isDark.value ? "rgba(255, 255, 255, 0.45)" : "var(--fa-gray-700)"
-);
 const formKey = ref(0);
 
 const accounts = computed<Account[]>(() => [
@@ -187,8 +179,6 @@ const demoAccountKey = ref<AccountKey>("super");
 const userStore = useUserStore();
 const router = useRouter();
 const route = useRoute();
-const isPassing = ref(false);
-const isClickPass = ref(false);
 
 const accountFormRef = ref<InstanceType<typeof FaLoginAccountForm> | null>(null);
 
@@ -299,11 +289,6 @@ const handleSubmit = async () => {
     const valid = await accountFormRef.value.validate?.();
     if (!valid) return;
 
-    if (!isPassing.value) {
-      isClickPass.value = true;
-      return;
-    }
-
     loading.value = true;
 
     await userStore.login(loginForm);
@@ -324,7 +309,6 @@ const handleSubmit = async () => {
     }
   } finally {
     loading.value = false;
-    accountFormRef.value?.resetDragVerify?.();
   }
 };
 </script>

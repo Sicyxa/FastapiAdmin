@@ -26,8 +26,8 @@ export async function initRouter(app: App<Element>): Promise<void> {
   app.use(router);
 }
 
-/** 须与 `staticRoutes` 首页子路由 path 一致 */
-export const HOME_PAGE_PATH = "/home";
+/** 登录后默认进入的页面；当前不再注册独立 `/home` 首页 */
+export const HOME_PAGE_PATH = "/dashboard/work";
 
 export { HOME_ROUTE_NAME, ROOT_LAYOUT_ROUTE_NAME };
 
