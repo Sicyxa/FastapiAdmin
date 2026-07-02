@@ -14,12 +14,9 @@
       <ElContainer class="chat-container">
         <ElHeader class="chat-header">
           <FaChatNavbar
-            :connection-status="connectionStatus"
-            :is-connected="isConnected"
             :message-count="messages.length"
             :is-sidebar-collapsed="isSidebarCollapsed"
             @clear-chat="handleClearChat"
-            @toggle-connection="toggleConnection"
             @toggle-sidebar="toggleSidebar"
           />
         </ElHeader>
@@ -34,9 +31,7 @@
         </ElMain>
         <ElFooter class="chat-footer">
           <FaChatInput
-            :disabled="!isConnected"
             :sending="sending"
-            :is-connected="isConnected"
             @send="handleSendMessage"
             @stop="handleStopMessage"
           />
@@ -64,16 +59,21 @@ import FaChatNavbar from "./components/FaChatNavbar.vue";
 import FaChatMessages from "./components/FaChatMessages.vue";
 import FaChatInput from "./components/FaChatInput.vue";
 import FaConfigInfoDrawer from "@/components/layouts/fa-header-bar/widgets/FaConfigInfoDrawer.vue";
+import {
+  clearPendingChatPrompt,
+  readPendingChatPrompt,
+  type PendingChatPrompt,
+} from "./pendingPrompt";
 
 // 状态
 const messages = ref<ChatMessage[]>([]);
 const sending = ref(false);
-const isConnected = ref(false);
-const connectionStatus = ref<"connected" | "connecting" | "disconnected">("disconnected");
+const isConnected = ref(true);
 const error = ref("");
 const currentSessionId = ref<string | null>(null);
 const isSidebarCollapsed = ref(false);
 const configDrawerVisible = ref(false);
+const pendingInitialPrompt = ref<PendingChatPrompt | null>(null);
 
 // Refs
 const chatMessagesRef = ref<{ scrollToBottom: () => void }>();
@@ -81,13 +81,15 @@ const sidebarRef = ref<{ loadSessions: () => void }>();
 
 // WebSocket
 let ws: WebSocket | null = null;
+let isUnmounting = false;
+let connectionPromptVisible = false;
+let pendingPromptSending = false;
 const WS_URL = import.meta.env.VITE_APP_WS_ENDPOINT;
 
 // ============ WebSocket 操作 ============
 const connectWebSocket = () => {
   if (ws?.readyState === WebSocket.OPEN) return;
 
-  connectionStatus.value = "connecting";
   error.value = "";
 
   try {
@@ -99,27 +101,25 @@ const connectWebSocket = () => {
 
     ws.onopen = () => {
       isConnected.value = true;
-      connectionStatus.value = "connected";
-      ElMessage.success("连接成功");
+      handlePendingInitialMessage();
     };
 
     ws.onmessage = (event) => handleWebSocketMessage(event.data);
 
     ws.onclose = () => {
-      isConnected.value = false;
-      connectionStatus.value = "disconnected";
+      ws = null;
       finishLoadingMessages();
+      if (!isUnmounting) {
+        handleDisconnected();
+      }
     };
 
     ws.onerror = () => {
-      isConnected.value = false;
-      connectionStatus.value = "disconnected";
-      ElMessage.error("连接失败，请检查服务器状态");
       finishLoadingMessages();
+      handleDisconnected();
     };
   } catch {
-    connectionStatus.value = "disconnected";
-    error.value = "无法创建连接";
+    handleDisconnected();
   }
 };
 
@@ -128,18 +128,24 @@ const disconnectWebSocket = () => {
     ws.close(1000, "用户主动断开");
     ws = null;
   }
-  isConnected.value = false;
-  connectionStatus.value = "disconnected";
   finishLoadingMessages();
 };
 
-const toggleConnection = () => {
-  if (isConnected.value) {
-    disconnectWebSocket();
-    ElMessage.info("已断开连接");
-  } else {
-    connectWebSocket();
-  }
+const handleDisconnected = () => {
+  if (isUnmounting) return;
+  isConnected.value = false;
+  showConnectionPrompt();
+};
+
+const showConnectionPrompt = () => {
+  if (connectionPromptVisible) return;
+  connectionPromptVisible = true;
+  ElMessageBox.alert("当前未连接到服务器，请检查服务状态后刷新页面重试。", "连接提示", {
+    confirmButtonText: "我知道了",
+    type: "warning",
+  }).finally(() => {
+    connectionPromptVisible = false;
+  });
 };
 
 // ============ 消息处理 ============
@@ -198,8 +204,12 @@ const generateId = () => {
 };
 
 // ============ 发送消息 ============
-const handleSendMessage = async (message: string, files?: UploadedFile[]) => {
-  if ((!message && !files) || !isConnected.value || sending.value) return;
+const handleSendMessage = async (message: string, files?: UploadedFile[]): Promise<boolean> => {
+  if ((!message && !files) || sending.value) return false;
+  if (!isConnected.value || ws?.readyState !== WebSocket.OPEN) {
+    handleDisconnected();
+    return false;
+  }
 
   // 结束上一个加载中的消息
   finishLoadingMessages();
@@ -207,7 +217,7 @@ const handleSendMessage = async (message: string, files?: UploadedFile[]) => {
   // 创建新会话（如果没有）
   if (!currentSessionId.value) {
     const success = await createNewSession(message);
-    if (!success) return;
+    if (!success) return false;
   }
 
   // 添加用户消息
@@ -235,6 +245,7 @@ const handleSendMessage = async (message: string, files?: UploadedFile[]) => {
         })
       );
       // 注意：sending 状态保持为 true，等待 [DONE] / [STOPPED] 标记清除
+      return true;
     } else {
       throw new Error("WebSocket 连接未建立");
     }
@@ -242,7 +253,24 @@ const handleSendMessage = async (message: string, files?: UploadedFile[]) => {
     messages.value.pop();
     error.value = "发送消息失败，请检查连接状态";
     sending.value = false;
+    return false;
   }
+};
+
+const handlePendingInitialMessage = async () => {
+  if (pendingPromptSending || !pendingInitialPrompt.value) return;
+  if (ws?.readyState !== WebSocket.OPEN) return;
+
+  pendingPromptSending = true;
+  const prompt = pendingInitialPrompt.value;
+  const sent = await handleSendMessage(prompt.message, prompt.files);
+
+  if (sent) {
+    pendingInitialPrompt.value = null;
+    clearPendingChatPrompt();
+  }
+
+  pendingPromptSending = false;
 };
 
 // 停止当前生成
@@ -330,22 +358,35 @@ const toggleSidebar = () => {
 };
 
 // ============ 生命周期 ============
-onMounted(connectWebSocket);
-onUnmounted(disconnectWebSocket);
+onMounted(() => {
+  pendingInitialPrompt.value = readPendingChatPrompt();
+  connectWebSocket();
+});
+onUnmounted(() => {
+  isUnmounting = true;
+  disconnectWebSocket();
+});
 </script>
 
 <style lang="scss" scoped>
 .main-chat {
   height: 100%;
   overflow: hidden;
-  border: 1px solid var(--el-border-color-light);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 86%), rgb(255 255 255 / 94%)) padding-box,
+    var(--fa-gradient-border) border-box;
+  border: 1px solid transparent;
   border-radius: 8px;
-  box-shadow: var(--el-box-shadow-light);
+  box-shadow:
+    0 20px 46px rgb(37 99 235 / 11%),
+    0 0 0 1px rgb(255 255 255 / 55%) inset;
 
   /* 与右侧同一表面色；与内容区的分界交给 Sidebar 的竖线即可 */
   .sidebar-container {
     width: 200px;
-    background: transparent;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 72%), rgb(255 255 255 / 46%)),
+      linear-gradient(180deg, var(--el-color-primary-light-9), rgb(240 253 244 / 72%));
     transition: width 0.3s ease;
 
     &.collapsed {
@@ -363,19 +404,41 @@ onUnmounted(disconnectWebSocket);
   .chat-header {
     height: auto;
     padding: 0;
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    background:
+      linear-gradient(90deg, rgb(255 255 255 / 76%), rgb(255 255 255 / 58%)),
+      linear-gradient(90deg, var(--el-color-primary-light-9), rgb(240 253 244 / 72%));
+    border-bottom: 1px solid var(--fa-accent-border);
   }
 
   .chat-main {
     flex: 1;
     overflow: hidden;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 54%), rgb(255 255 255 / 78%)),
+      var(--fa-surface-tint);
   }
 
   .chat-footer {
     height: auto;
     min-height: 80px;
     padding: 0;
-    border-top: 1px solid var(--el-border-color-lighter);
+    background:
+      linear-gradient(90deg, rgb(255 255 255 / 80%), rgb(255 255 255 / 64%)),
+      linear-gradient(90deg, var(--el-color-primary-light-9), rgb(255 247 237 / 70%));
+    border-top: 1px solid var(--fa-accent-border);
+  }
+}
+
+html.dark .main-chat {
+  background:
+    linear-gradient(180deg, rgb(23 26 33 / 90%), rgb(18 20 26 / 96%)) padding-box,
+    var(--fa-gradient-border) border-box;
+
+  .sidebar-container,
+  .chat-header,
+  .chat-footer,
+  .chat-main {
+    background: var(--el-bg-color-overlay);
   }
 }
 </style>

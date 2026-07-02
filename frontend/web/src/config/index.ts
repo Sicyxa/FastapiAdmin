@@ -88,9 +88,9 @@ const appConfig: SystemConfig = {
     {
       theme: MenuThemeEnum.DESIGN,
       background: "#FFFFFF",
-      systemNameColor: "var(--fa-gray-800)",
-      iconColor: "#6B6B6B",
-      textColor: "#29343D",
+      systemNameColor: "var(--fa-gray-900)",
+      iconColor: "#52637F",
+      textColor: "#1E293B",
       img: configImages.menuStyles.design,
     },
     {
@@ -122,13 +122,13 @@ const appConfig: SystemConfig = {
   ],
   // 系统主色
   systemMainColor: [
-    "#5D87FF",
-    "#B48DF3",
-    "#1D84FF",
-    "#60C041",
-    "#38C0FC",
-    "#F9901F",
-    "#FF80C8",
+    "#2563EB",
+    "#7C3AED",
+    "#0891B2",
+    "#059669",
+    "#F59E0B",
+    "#E11D48",
+    "#0F766E",
   ] as const,
   // 快速入口配置
   fastEnter: fastEnterConfig,

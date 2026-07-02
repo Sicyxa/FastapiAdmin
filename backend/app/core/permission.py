@@ -36,6 +36,10 @@ class Permission:
         self.auth = auth
         self.conditions: list[ColumnElement] = []  # 权限条件列表
 
+    def __has_admin_role(self) -> bool:
+        roles = getattr(self.auth.user, "roles", []) or []
+        return any(getattr(role, "code", None) in {"ADMIN", "SUPER_ADMIN"} and getattr(role, "status", 0) == 0 for role in roles)
+
     async def filter_query(self, query: Any) -> Any:
         """
         按数据权限为 SQLAlchemy 查询追加 WHERE 条件。
@@ -63,8 +67,8 @@ class Permission:
         if not self.auth.check_data_scope:
             return None
 
-        # 超级管理员可以查看所有数据
-        if self.auth.user.is_superuser:
+        # 平台超管和业务管理员可以查看管理后台数据；普通用户继续按角色数据范围过滤。
+        if self.auth.user.is_superuser or self.__has_admin_role():
             return None
 
         # 获取模型的权限过滤策略
@@ -101,18 +105,6 @@ class Permission:
         for role in roles:
             if hasattr(role, "menus") and role.menus:
                 menu_ids.update(menu.id for menu in role.menus if menu.status == 0)
-
-        # 租户用户：菜单列表也受套餐约束（请求级缓存避免重复 DB 查询）
-        if self.auth.tenant_id and menu_ids:
-            cache_attr = "_cached_package_menu_ids"
-            cached = getattr(self.auth, cache_attr, None)
-            if cached is None:
-                from app.api.v1.module_platform.package.service import PackageService
-                allowed_ids = set(await PackageService.get_tenant_available_menu_ids(self.auth, self.auth.tenant_id))
-                object.__setattr__(self.auth, cache_attr, allowed_ids)
-            else:
-                allowed_ids = cached
-            menu_ids = menu_ids & allowed_ids
 
         if menu_ids:
             id_attr = getattr(self.model, "id", None)

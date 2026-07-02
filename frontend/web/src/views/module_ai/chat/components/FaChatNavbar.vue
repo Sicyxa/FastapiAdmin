@@ -17,21 +17,6 @@
     </div>
 
     <div class="navbar-right">
-      <ElTag
-        class="connection-status"
-        effect="plain"
-        :type="connectionStatus === 'connected' ? 'success' : 'danger'"
-      >
-        <ElIcon :class="['status-icon', connectionStatus]">
-          <Connection v-if="connectionStatus === 'connected'" />
-          <Loading v-else-if="connectionStatus === 'connecting'" />
-          <Warning v-else />
-        </ElIcon>
-        <span class="status-text">{{ connectionStatusText }}</span>
-      </ElTag>
-      <ElButton text :icon="Setting" @click="handleToggleConnection">
-        {{ isConnected ? "断开连接" : "重新连接" }}
-      </ElButton>
       <ElButton v-if="hasMessages" text :icon="Delete" @click="handleClearChat">
         清空对话
       </ElButton>
@@ -41,19 +26,16 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { Connection, Loading, Warning, Delete, Setting } from "@element-plus/icons-vue";
+import { Delete } from "@element-plus/icons-vue";
 import { resolveIconForFaSvgIcon } from "@utils";
 
 interface Props {
-  connectionStatus: "connected" | "connecting" | "disconnected";
-  isConnected: boolean;
   messageCount: number;
   isSidebarCollapsed?: boolean;
 }
 
 interface Emits {
   (e: "clear-chat"): void;
-  (e: "toggle-connection"): void;
   (e: "toggle-sidebar"): void;
 }
 
@@ -62,23 +44,9 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const emit = defineEmits<Emits>();
 
-const connectionStatusText = computed(() => {
-  switch (props.connectionStatus) {
-    case "connected":
-      return "已连接";
-    case "connecting":
-      return "连接中...";
-    case "disconnected":
-      return "未连接";
-    default:
-      return "未知状态";
-  }
-});
-
 const hasMessages = computed(() => props.messageCount > 0);
 
 const handleClearChat = () => emit("clear-chat");
-const handleToggleConnection = () => emit("toggle-connection");
 const toggleSidebar = () => emit("toggle-sidebar");
 </script>
 
@@ -88,6 +56,10 @@ const toggleSidebar = () => emit("toggle-sidebar");
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 68%), rgb(255 255 255 / 46%)),
+    var(--fa-surface-tint);
+  border-bottom: 1px solid var(--fa-accent-border);
 
   .navbar-left {
     display: flex;
@@ -98,7 +70,7 @@ const toggleSidebar = () => emit("toggle-sidebar");
   .navbar-title {
     font-size: 15px;
     font-weight: 600;
-    color: var(--el-text-color-primary);
+    color: var(--el-color-primary);
   }
 
   .navbar-right {
@@ -120,7 +92,7 @@ const toggleSidebar = () => emit("toggle-sidebar");
   color: var(--el-text-color-regular);
   cursor: pointer;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 4px;
   transition:
     background-color 0.2s,
@@ -128,7 +100,11 @@ const toggleSidebar = () => emit("toggle-sidebar");
 
   &:hover {
     color: var(--el-color-primary);
-    background: var(--el-color-primary-light-9);
+    background:
+      linear-gradient(var(--fa-surface-elevated), var(--fa-surface-elevated)) padding-box,
+      var(--fa-gradient-border) border-box;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgb(37 99 235 / 12%);
   }
 
   &:focus-visible {
@@ -138,41 +114,6 @@ const toggleSidebar = () => emit("toggle-sidebar");
 
   & > div {
     color: inherit;
-  }
-}
-
-.connection-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  padding: 0 12px;
-  margin: 0;
-  font-size: 14px;
-  line-height: 1;
-
-  :deep(.el-tag__content) {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-  }
-
-  .status-icon {
-    &.connected {
-      color: var(--el-color-success);
-    }
-
-    &.connecting {
-      color: var(--el-color-warning);
-    }
-
-    &.disconnected {
-      color: var(--el-color-danger);
-    }
-  }
-
-  .status-text {
-    color: var(--el-text-color-secondary);
   }
 }
 </style>

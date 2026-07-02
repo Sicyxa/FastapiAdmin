@@ -336,7 +336,10 @@ defineExpose({
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-right: 1px solid var(--el-border-color-light);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 64%), rgb(255 255 255 / 42%)),
+    var(--fa-surface-tint);
+  border-right: 1px solid var(--fa-accent-border);
   transition: width 0.3s ease;
 
   .sidebar-header {
@@ -344,6 +347,7 @@ defineExpose({
     align-items: center;
     justify-content: space-between;
     padding: 12px;
+    border-bottom: 1px solid var(--fa-accent-border);
 
     .logo-section {
       display: flex;
@@ -352,6 +356,7 @@ defineExpose({
 
       .logo-icon {
         color: var(--el-color-primary);
+        filter: drop-shadow(0 6px 10px rgb(64 158 255 / 18%));
       }
 
       .project-name {
@@ -374,7 +379,10 @@ defineExpose({
         align-items: center;
         justify-content: center;
         width: 100%;
-        border-radius: 20px;
+        background: linear-gradient(135deg, var(--el-color-primary), var(--el-color-success));
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 10px 22px rgb(64 158 255 / 20%);
         transition: all 0.2s ease;
 
         .btn-icon {
@@ -382,7 +390,7 @@ defineExpose({
         }
 
         &:hover {
-          box-shadow: var(--el-box-shadow);
+          box-shadow: 0 14px 26px rgb(64 158 255 / 26%);
           transform: translateY(-1px);
         }
 
@@ -397,16 +405,20 @@ defineExpose({
         margin-bottom: 16px;
 
         :deep(.el-input__wrapper) {
-          border-radius: 20px;
-          box-shadow: 0 0 0 1px var(--el-border-color) inset;
+          background:
+            linear-gradient(var(--el-bg-color-overlay), var(--el-bg-color-overlay)) padding-box,
+            var(--fa-gradient-border) border-box;
+          border: 1px solid transparent;
+          border-radius: 8px;
+          box-shadow: none;
           transition: all 0.2s ease;
 
           &:hover {
-            box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+            box-shadow: 0 0 0 1px var(--el-color-primary-light-6) inset;
           }
 
           &.is-focus {
-            box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+            box-shadow: 0 0 0 2px var(--el-color-primary-light-6) inset;
           }
         }
 
@@ -441,7 +453,7 @@ defineExpose({
               width: 3px;
               height: 12px;
               content: "";
-              background: var(--el-color-primary);
+              background: linear-gradient(180deg, var(--el-color-primary), var(--el-color-success));
               border-radius: 2px;
             }
 
@@ -473,16 +485,19 @@ defineExpose({
               transition: all 0.2s ease;
 
               &:hover {
-                background: var(--el-fill-color-light);
-                border-color: var(--el-border-color-light);
+                background: rgb(255 255 255 / 72%);
+                border-color: var(--el-color-primary-light-7);
                 transform: translateX(2px);
               }
 
               &.active {
                 color: var(--el-color-primary);
-                background: var(--el-color-primary-light-9);
-                border-color: var(--el-border-color-light);
-                box-shadow: none;
+                background:
+                  linear-gradient(135deg, var(--el-color-primary-light-9), rgb(236 253 245 / 80%))
+                    padding-box,
+                  var(--fa-gradient-border) border-box;
+                border-color: transparent;
+                box-shadow: 0 8px 18px rgb(64 158 255 / 12%);
               }
 
               .session-icon {
@@ -546,7 +561,8 @@ defineExpose({
 
   .sidebar-footer {
     padding: 12px;
-    border-top: 1px solid var(--el-border-color-light);
+    background: rgb(255 255 255 / 48%);
+    border-top: 1px solid var(--fa-accent-border);
 
     .user-info {
       display: flex;
@@ -588,6 +604,16 @@ defineExpose({
       align-items: center;
       justify-content: center;
     }
+  }
+}
+
+:global(html.dark) .sidebar {
+  background:
+    linear-gradient(180deg, rgb(17 24 39 / 86%), rgb(15 23 42 / 76%)),
+    var(--fa-surface-tint);
+
+  .sidebar-footer {
+    background: rgb(15 23 42 / 62%);
   }
 }
 </style>

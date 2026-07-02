@@ -79,6 +79,53 @@ html.dark .el-card {
   padding: 0 10px !important;
 }
 
+.el-button:not(.el-button--text):not(.is-link) {
+  border-color: var(--fa-accent-border);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 8px 18px rgb(37 99 235 / 12%);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.el-button--primary:not(.el-button--text):not(.is-link) {
+  color: #fff !important;
+  background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-cyan)) !important;
+  border-color: transparent !important;
+  box-shadow: 0 10px 22px rgb(37 99 235 / 22%);
+
+  &:hover,
+  &:focus {
+    background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-green)) !important;
+    box-shadow: 0 12px 26px rgb(37 99 235 / 28%);
+  }
+
+  &.is-plain {
+    color: var(--el-color-primary) !important;
+    background:
+      linear-gradient(var(--fa-surface-elevated), var(--fa-surface-elevated)) padding-box,
+      linear-gradient(135deg, var(--el-color-primary-light-5), var(--fa-brand-green)) border-box !important;
+    border-color: transparent !important;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+      color: #fff !important;
+      background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-green)) !important;
+      box-shadow: 0 10px 22px rgb(37 99 235 / 22%);
+    }
+  }
+}
+
 // 优化菜单折叠展开动画（提升动画流畅度）
 .el-menu.el-menu--inline {
   transition: max-height 0.26s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -124,17 +171,67 @@ html.dark .el-card {
 
 .el-popover {
   min-width: 80px;
+  background:
+    linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
+    var(--fa-gradient-border) border-box !important;
+  border: 1px solid transparent !important;
   border-radius: var(--el-border-radius-small) !important;
+  box-shadow: var(--fa-shadow-card);
+}
+
+.el-card {
+  background:
+    linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
+    var(--fa-gradient-border) border-box !important;
+  border: 1px solid transparent !important;
+  box-shadow: var(--fa-shadow-card);
+}
+
+.el-card__header {
+  background: linear-gradient(
+    90deg,
+    var(--el-color-primary-light-9),
+    color-mix(in srgb, var(--fa-brand-green) 10%, transparent)
+  );
+  border-bottom: 1px solid var(--fa-accent-border) !important;
 }
 
 .el-dialog {
   overflow: hidden;
+  background:
+    linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
+    var(--fa-gradient-border) border-box !important;
+  border: 1px solid transparent;
   border-radius: calc(var(--custom-radius) / 1.2 + 2px) !important;
+  box-shadow: var(--fa-shadow-dialog);
 }
 
 .el-dialog__header {
+  padding: 16px 20px 13px !important;
+  background: linear-gradient(
+    90deg,
+    var(--el-color-primary-light-9),
+    color-mix(in srgb, var(--fa-brand-green) 12%, transparent),
+    color-mix(in srgb, var(--fa-brand-amber) 10%, transparent)
+  );
+  border-bottom: 1px solid var(--fa-accent-border);
+
   .el-dialog__title {
+    display: inline-flex;
+    gap: 9px;
+    align-items: center;
     font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+
+    &::before {
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      content: "";
+      background: linear-gradient(180deg, var(--el-color-primary), var(--fa-brand-green));
+      border-radius: 999px;
+    }
   }
 }
 
@@ -154,7 +251,7 @@ html.dark .el-card {
       width: calc(100% + 32px);
       height: 1px;
       content: "";
-      background-color: var(--fa-gray-300);
+      background: var(--fa-gradient-border);
     }
 
     &::before {
@@ -167,9 +264,28 @@ html.dark .el-card {
   }
 }
 
+.el-dialog__footer {
+  padding-top: 12px !important;
+  border-top: 1px solid var(--fa-muted-border);
+}
+
+.el-drawer {
+  background:
+    linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
+    var(--fa-gradient-border) border-box !important;
+  border-left: 1px solid transparent;
+  box-shadow: var(--fa-shadow-dialog);
+}
+
 .el-drawer__header {
   padding: 12px 8px !important;
   margin-bottom: 2px !important;
+  background: linear-gradient(
+    90deg,
+    var(--el-color-primary-light-9),
+    color-mix(in srgb, var(--fa-brand-green) 12%, transparent)
+  );
+  border-bottom: 1px solid var(--fa-accent-border);
 }
 
 .el-drawer__body {
@@ -177,10 +293,17 @@ html.dark .el-card {
   padding: 0 8px !important;
 }
 
+.el-drawer__footer {
+  border-top: 1px solid var(--fa-muted-border);
+}
+
 // el-message 样式优化
 .el-message {
-  background-color: var(--default-box-color) !important;
-  border: 0 !important;
+  background:
+    linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
+    var(--fa-gradient-border) border-box !important;
+  border: 1px solid transparent !important;
+  border-left: 3px solid var(--el-color-primary) !important;
   box-shadow:
     0 6px 16px 0 rgb(0 0 0 / 8%),
     0 3px 6px -4px rgb(0 0 0 / 12%),
@@ -194,8 +317,12 @@ html.dark .el-card {
 // 修改 el-dropdown 样式
 .el-dropdown-menu {
   padding: 6px !important;
-  border: none !important;
+  background:
+    linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
+    var(--fa-gradient-border) border-box !important;
+  border: 1px solid transparent !important;
   border-radius: 10px !important;
+  box-shadow: var(--fa-shadow-card);
 
   .el-dropdown-menu__item {
     padding: 6px 16px !important;
@@ -203,12 +330,16 @@ html.dark .el-card {
 
     &:hover:not(.is-disabled) {
       color: var(--fa-gray-900) !important;
-      background-color: var(--fa-el-active-color) !important;
+      background: linear-gradient(
+        90deg,
+        var(--el-color-primary-light-9),
+        color-mix(in srgb, var(--fa-brand-green) 10%, transparent)
+      ) !important;
     }
 
     &:focus:not(.is-disabled) {
       color: var(--fa-gray-900) !important;
-      background-color: var(--fa-gray-200) !important;
+      background-color: var(--fa-el-active-color) !important;
     }
   }
 }
@@ -356,16 +487,68 @@ html.dark .el-card {
 }
 
 .el-message-box {
+  background:
+    linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
+    var(--fa-gradient-border) border-box !important;
+  border: 1px solid transparent !important;
   padding: 25px 20px !important;
+  box-shadow: var(--fa-shadow-dialog);
 }
 
 .el-message-box__title {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
   font-weight: 500 !important;
+
+  &::before {
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    content: "";
+    background: linear-gradient(180deg, var(--el-color-primary), var(--fa-brand-amber));
+    border-radius: 999px;
+  }
+}
+
+.el-message-box__content {
+  border-top: 1px solid var(--fa-muted-border);
 }
 
 .el-table__column-filter-trigger i {
   margin: -3px 0 0 2px;
   color: var(--theme-color) !important;
+}
+
+.el-table {
+  --el-table-border-color: var(--fa-muted-border) !important;
+  --el-table-header-bg-color: var(--fa-surface-soft) !important;
+  --el-table-row-hover-bg-color: var(--el-color-primary-light-9) !important;
+
+  overflow: hidden;
+  border-radius: calc(var(--custom-radius) / 2 + 2px);
+
+  th.el-table__cell {
+    color: var(--fa-gray-900);
+    background: linear-gradient(
+      90deg,
+      var(--el-color-primary-light-9),
+      color-mix(in srgb, var(--fa-brand-green) 8%, transparent)
+    ) !important;
+    border-bottom: 1px solid var(--fa-accent-border) !important;
+  }
+
+  td.el-table__cell {
+    border-bottom-color: var(--fa-muted-border) !important;
+  }
+
+  .el-table__row:hover > td.el-table__cell {
+    background: linear-gradient(
+      90deg,
+      var(--el-color-primary-light-9),
+      color-mix(in srgb, var(--fa-brand-green) 7%, transparent)
+    ) !important;
+  }
 }
 
 // 去除 el-dropdown 鼠标放上去出现的边框
@@ -454,11 +637,19 @@ html.dark .el-card {
         margin-bottom: 4px !important;
         font-weight: 400 !important;
         color: var(--fa-gray-900) !important;
-        background-color: var(--fa-el-active-color) !important;
+        background: linear-gradient(
+          90deg,
+          var(--el-color-primary-light-9),
+          color-mix(in srgb, var(--fa-brand-green) 10%, transparent)
+        ) !important;
       }
 
       &:hover {
-        background-color: var(--fa-hover-color) !important;
+        background: linear-gradient(
+          90deg,
+          var(--fa-hover-color),
+          color-mix(in srgb, var(--fa-brand-amber) 8%, transparent)
+        ) !important;
       }
     }
 

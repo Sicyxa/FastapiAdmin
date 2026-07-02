@@ -67,6 +67,7 @@ const handlePromptClick = (prompt: string) => {
     .ai-logo {
       margin-bottom: 24px;
       color: var(--el-color-primary);
+      filter: drop-shadow(0 12px 22px rgb(64 158 255 / 20%));
     }
 
     h1 {
@@ -93,17 +94,20 @@ const handlePromptClick = (prompt: string) => {
         padding: 20px;
         text-align: left;
         cursor: pointer;
-        background: var(--el-bg-color-overlay);
-        border: 1px solid var(--el-border-color-light);
-        border-radius: 12px;
+        background:
+          linear-gradient(180deg, rgb(255 255 255 / 94%), rgb(255 255 255 / 84%)) padding-box,
+          linear-gradient(135deg, var(--el-color-primary-light-6), var(--el-color-success-light-6))
+            border-box;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        box-shadow: 0 10px 24px rgb(31 45 61 / 8%);
         transition:
           border-color 0.2s ease,
           box-shadow 0.2s ease,
           transform 0.2s ease;
 
         &:hover {
-          border-color: var(--el-color-primary);
-          box-shadow: var(--el-box-shadow-light);
+          box-shadow: 0 14px 28px rgb(64 158 255 / 14%);
           transform: translateY(-2px);
         }
 

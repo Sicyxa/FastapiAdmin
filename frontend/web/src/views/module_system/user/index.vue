@@ -1,24 +1,9 @@
-<!-- 用户管理：左部门树 + 右 Art 表格 -->
+<!-- 用户管理：账号 + 角色权限 -->
 <template>
   <div class="fa-full-height user-manage-page">
     <div
       class="user-manage-body box-border flex gap-4 h-full max-md:block max-md:gap-0 max-md:h-auto"
     >
-      <div class="user-dept-panel shrink-0 w-58 h-full max-md:w-full max-md:h-auto max-md:mb-5">
-        <ElCard class="tree-card fa-card-xs flex flex-col h-full mt-0" shadow="hover">
-          <template #header>
-            <b>部门</b>
-          </template>
-          <ElScrollbar class="dept-tree-scroll min-h-0 flex-1">
-            <FaDeptTree
-              v-model="deptFilterId"
-              class="dept-tree-inner"
-              @node-click="handleDeptNodeClick"
-            />
-          </ElScrollbar>
-        </ElCard>
-      </div>
-
       <div class="user-main-panel flex flex-col grow min-w-0 min-h-0">
         <FaSearchBar
           v-show="showSearchBar"
@@ -32,8 +17,6 @@
           :show-search="true"
           :disabled-search="false"
           :default-expanded="false"
-          include-audit
-          :audit-item-options="{ showTenantId: true }"
           @search="handleSearchBarSearch"
           @reset="onResetSearch"
         />
@@ -117,14 +100,6 @@
                 : ""
             }}
           </template>
-          <!-- 岗位 → 数组 join 渲染 -->
-          <template #positions="{ row }">
-            {{
-              (row as unknown as UserInfo)?.positions
-                ? (row as unknown as UserInfo).positions!.map((item) => item.name).join("、")
-                : ""
-            }}
-          </template>
         </FaDescriptions>
       </template>
       <template v-else>
@@ -143,32 +118,10 @@
           :show-submit="false"
           class="crud-dialog-art-form"
         >
-          <template #dept_id>
-            <ElTreeSelect
-              v-model="formData.dept_id"
-              placeholder="请选择上级部门"
-              :data="deptOptions"
-              :props="{ children: 'children', label: 'label', disabled: 'disabled' }"
-              filterable
-              check-strictly
-              :render-after-expand="false"
-            />
-          </template>
           <template #role_ids>
             <ElSelect v-model="formData.role_ids" multiple placeholder="请选择角色">
               <ElOption
                 v-for="item in roleOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-                :disabled="item.disabled"
-              />
-            </ElSelect>
-          </template>
-          <template #position_ids>
-            <ElSelect v-model="formData.position_ids" multiple placeholder="请选择岗位">
-              <ElOption
-                v-for="item in positionOptions"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -222,13 +175,10 @@ import UserAPI, {
   type UserPageQuery,
 } from "@/api/module_system/user";
 import {
-  formatTree,
   renderTableOperationCell,
   type TableOperationAction,
   resolveStatusColumns,
 } from "@utils";
-import PositionAPI from "@/api/module_system/position";
-import DeptAPI from "@/api/module_system/dept";
 import RoleAPI from "@/api/module_system/role";
 import { useUserStore } from "@stores";
 import { useAuth } from "@/hooks/core/useAuth";
@@ -239,7 +189,6 @@ import type FaSearchBar from "@/components/forms/fa-search-bar/index.vue";
 import type { FormItem } from "@/components/forms/fa-form/index.vue";
 import type FaForm from "@/components/forms/fa-form/index.vue";
 import type { IContentConfig, IObject } from "@/components/modal/types";
-import FaDeptTree from "./components/FaDeptTree.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const { hasAuth } = useAuth();
@@ -269,10 +218,6 @@ function fetchUserTableList(params: Record<string, unknown>) {
     page_no: 1,
     page_size: 10,
     ...params,
-    dept_id:
-      deptFilterId.value !== undefined && deptFilterId.value !== null && deptFilterId.value !== ""
-        ? Number(deptFilterId.value)
-        : undefined,
   });
 }
 
@@ -345,13 +290,10 @@ const submitLoading = ref(false);
 const uploadLoading = ref(false);
 const createLoading = ref(false);
 const moreLoading = ref(false);
-const deptFilterId = ref<string | number | undefined>(undefined);
 
 const appStore = useAppStore();
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "450px" : "90%"));
-const deptOptions = ref<OptionType[]>();
 const roleOptions = ref<Array<{ value: number; label: string; disabled?: boolean }>>();
-const positionOptions = ref<Array<{ value: number; label: string; disabled?: boolean }>>();
 const { importVisible, exportVisible, openImport, openExport } = useImportExport();
 const detailFormData = ref<UserInfo>({});
 
@@ -362,18 +304,9 @@ const userDetailItems: DescriptionsItem[] = [
   { label: "账号", prop: "username" },
   { label: "用户名", prop: "name" },
   { label: "性别", prop: "gender", slot: "gender" }, // 三种状态 Tag
-  { label: "部门", prop: "dept.name" }, // 嵌套属性 a.b.c
   { label: "角色", prop: "roles", slot: "roles" }, // 数组 join 渲染
-  { label: "岗位", prop: "positions", slot: "positions" }, // 数组 join 渲染
   { label: "邮箱", prop: "email" },
   { label: "手机号", prop: "mobile" },
-  {
-    label: "是否超管",
-    prop: "is_superuser",
-    tag: {
-      map: { true: { type: "success", text: "是" }, false: { type: "info", text: "否" } },
-    },
-  },
   {
     label: "状态",
     prop: "status",
@@ -389,7 +322,7 @@ const userDetailItems: DescriptionsItem[] = [
   { label: "描述", prop: "description", span: 4 },
 ];
 
-// 用户新增/编辑表单配置 —— 三个复杂字段（部门树、角色多选、岗位多选）用插槽渲染
+// 用户新增/编辑表单配置 —— 角色多选由插槽渲染
 const userDialogFormItems = computed<FormItem[]>(() => [
   {
     key: "username",
@@ -423,9 +356,7 @@ const userDialogFormItems = computed<FormItem[]>(() => [
     type: "input",
     props: { placeholder: "请输入邮箱", maxlength: 50 },
   },
-  { key: "dept_id", label: "部门", type: "input" /* 实际渲染由 #dept_id 插槽接管 */ },
   { key: "role_ids", label: "角色", type: "input" /* 实际渲染由 #role_ids 插槽接管 */ },
-  { key: "position_ids", label: "岗位", type: "input" /* 实际渲染由 #position_ids 插槽接管 */ },
   {
     key: "password",
     label: "密码",
@@ -433,7 +364,6 @@ const userDialogFormItems = computed<FormItem[]>(() => [
     hidden: !!formData.value.id,
     props: { placeholder: "请输入密码", type: "password", showPassword: true, clearable: true },
   },
-  { key: "is_superuser", label: "是否超管", type: "switch" },
   {
     key: "status",
     label: "状态",
@@ -603,12 +533,6 @@ const {
         },
       },
       {
-        prop: "dept",
-        label: "部门",
-        minWidth: 100,
-        formatter: (row: UserInfo) => row.dept?.name ?? "—",
-      },
-      {
         prop: "gender",
         label: "性别",
         width: 88,
@@ -645,13 +569,6 @@ const userCrudCols = computed(() =>
 
 const exportQueryParams = computed(() => {
   const sp = stripPaginationParams(searchParams);
-  if (
-    deptFilterId.value !== undefined &&
-    deptFilterId.value !== null &&
-    deptFilterId.value !== ""
-  ) {
-    (sp as Record<string, unknown>).dept_id = Number(deptFilterId.value);
-  }
   const q = cleanEmptyArrayParams(sp) as Record<string, unknown>;
   if (typeof q.status === "string") {
     const s = q.status;
@@ -728,7 +645,6 @@ const rules = reactive({
       trigger: "blur",
     },
   ],
-  is_superuser: [{ required: true, message: "请选择是否超管", trigger: "blur" }],
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
@@ -765,12 +681,7 @@ function onResetSearch() {
     created_id: undefined,
     created_time: undefined,
   };
-  deptFilterId.value = undefined;
   void resetSearchParams();
-}
-
-async function handleDeptNodeClick() {
-  await getData();
 }
 
 async function handleImportUpload(formDataUpload: FormData) {
@@ -824,9 +735,6 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
       dialogVisible.title = "修改用户";
       Object.assign(formData.value, response.data.data);
       formData.value.role_ids = (response.data.data.roles || []).map((item) => item.id as number);
-      formData.value.position_ids = (response.data.data.positions || []).map(
-        (item) => item.id as number
-      );
     }
   } else {
     dialogVisible.title = "新增用户";
@@ -840,9 +748,6 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     dataFormRef.value.clearValidate();
   }
 
-  const deptResponse = await DeptAPI.listDept({});
-  deptOptions.value = formatTree(deptResponse.data.data);
-
   const roleResponse = await RoleAPI.listRole();
   const roleRows = roleResponse.data.data.items ?? [];
   roleOptions.value = roleRows
@@ -854,16 +759,6 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     }))
     .filter((opt) => !opt.disabled);
 
-  const positionResponse = await PositionAPI.listPosition();
-  const positionRows = positionResponse.data.data.items ?? [];
-  positionOptions.value = positionRows
-    .filter((item) => item.id !== undefined && item.name !== undefined)
-    .map((item) => ({
-      value: item.id as number,
-      label: item.name as string,
-      disabled: item.status === 1,
-    }))
-    .filter((opt) => !opt.disabled);
 }
 
 async function handleSubmit() {

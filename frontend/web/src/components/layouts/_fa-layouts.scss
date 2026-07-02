@@ -31,6 +31,7 @@
       flex-direction: column;
       min-height: 0;
       padding: 20px;
+      background: var(--app-bg);
       overflow: auto;
 
       :deep(.layout-content) {
@@ -46,7 +47,12 @@
           min-height: 0;
           padding: 20px;
           overflow: hidden auto;
-          background: var(--default-box-color);
+          background:
+            linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color))
+              padding-box,
+            var(--fa-gradient-border) border-box;
+          border: 1px solid transparent;
+          box-shadow: var(--fa-shadow-card);
           border-radius: calc(var(--custom-radius) / 2 + 2px) !important;
         }
       }

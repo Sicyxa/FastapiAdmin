@@ -1,7 +1,7 @@
 <!-- 顶部栏 -->
 <template>
   <div
-    class="w-full bg-(--default-bg-color)"
+    class="fa-header-shell w-full bg-(--default-bg-color)"
     :class="[
       tabStyle === 'tab-card' || tabStyle === 'tab-google' || tabStyle === 'tab-default'
         ? 'max-sm:mb-3 bg-box!'
@@ -507,6 +507,25 @@ const openChat = (): void => {
 /* Breathing animation for chat dot */
 .breathing-dot {
   animation: breathing 1.5s ease-in-out infinite;
+}
+
+.fa-header-shell {
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 82%), rgb(255 255 255 / 68%)),
+    linear-gradient(90deg, var(--el-color-primary-light-9), rgb(240 253 244 / 72%)) !important;
+  border-bottom: 1px solid var(--fa-accent-border);
+  box-shadow: 0 8px 24px rgb(37 99 235 / 6%);
+  backdrop-filter: blur(14px);
+
+  :deep(.fa-icon-button) {
+    border: 1px solid transparent;
+  }
+}
+
+:global(html.dark) .fa-header-shell {
+  background:
+    linear-gradient(90deg, rgb(17 24 39 / 88%), rgb(15 23 42 / 78%)),
+    linear-gradient(90deg, rgb(37 99 235 / 18%), rgb(5 150 105 / 12%)) !important;
 }
 
 /* iPad breakpoint adjustments */

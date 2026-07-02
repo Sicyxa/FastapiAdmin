@@ -11,43 +11,8 @@
         </div>
         <p>文档、PPT、检索与校对集中处理，让日常材料生产更高效。</p>
 
-        <div class="prompt-panel fa-card">
-          <ElInput
-            v-model="promptText"
-            type="textarea"
-            resize="none"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-            placeholder="今天需要我做些什么？Shift + Enter 换行"
-            class="prompt-input"
-            @keyup.enter.exact="submitPrompt"
-          />
-
-          <div class="prompt-actions">
-            <div class="model-list">
-              <ElButton plain>
-                <FaSvgIcon icon="ri:sparkling-2-line" />
-                DeepSeek-R1 满血版
-              </ElButton>
-              <ElButton plain type="primary">
-                <FaSvgIcon icon="ri:global-line" />
-                联网搜索
-              </ElButton>
-            </div>
-            <div class="tool-list">
-              <FaIconButton icon="ri:box-3-line" />
-              <FaIconButton icon="ri:upload-2-line" />
-              <FaIconButton icon="ri:link-m" />
-              <ElButton type="primary" class="send-btn" @click="submitPrompt">
-                <FaSvgIcon icon="ri:send-plane-2-fill" />
-              </ElButton>
-            </div>
-          </div>
-        </div>
-
-        <div class="prompt-tags">
-          <button v-for="item in promptTags" :key="item" type="button" @click="usePrompt(item)">
-            {{ item }}
-          </button>
+        <div class="workbench-chat-entry">
+          <FaChatInput :show-hint="false" @send="submitPrompt" />
         </div>
       </section>
 
@@ -115,7 +80,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import FaDashboardSkeleton from "@/components/skeleton/fa-dashboard-skeleton.vue";
+import FaChatInput from "@/views/module_ai/chat/components/FaChatInput.vue";
+import { savePendingChatPrompt } from "@/views/module_ai/chat/pendingPrompt";
+import type { UploadedFile } from "@/views/module_ai/chat/types";
 
 defineOptions({ name: "DashboardWorkbench" });
 
@@ -128,19 +97,7 @@ interface ToolItem {
 }
 
 const loading = ref(true);
-const promptText = ref("");
-
-const promptTags = [
-  "做一个PPT分析人工智能的价值",
-  "一文深究AI能否实现解码人类思想",
-  "高校教育与文旅融合的相关文献资料",
-  "以中国式现代化的出发点为主题的开题报告",
-  "安史之乱为什么会发生？",
-  "做一个分析生育率走低原因的PPT",
-  "高铁座位为什么没有 E？",
-  "图解近五年两会热门议题",
-  "研究民营企业的发展方向",
-];
+const router = useRouter();
 
 const writingTools: ToolItem[] = [
   {
@@ -225,14 +182,13 @@ const aiTools: ToolItem[] = [
   },
 ];
 
-function usePrompt(text: string): void {
-  promptText.value = text;
-}
+function submitPrompt(message: string, files?: UploadedFile[]): void {
+  const content = message.trim();
+  const hasFiles = Boolean(files?.length);
+  if (!content && !hasFiles) return;
 
-function submitPrompt(): void {
-  if (!promptText.value.trim()) {
-    return;
-  }
+  savePendingChatPrompt(content || "请处理这些附件", files);
+  router.push({ name: "DashboardAiAssistant" });
 }
 
 onMounted(() => {
@@ -246,6 +202,9 @@ onMounted(() => {
   flex-direction: column;
   gap: 22px;
   padding-bottom: 8px;
+
+  --work-card-shadow: 0 2px 6px rgb(15 23 42 / 6%), 0 14px 32px rgb(37 99 235 / 12%);
+  --work-card-shadow-hover: 0 4px 10px rgb(15 23 42 / 8%), 0 20px 42px rgb(37 99 235 / 16%);
 }
 
 .workplace-hero {
@@ -288,69 +247,16 @@ onMounted(() => {
   }
 }
 
-.prompt-panel {
-  width: min(100%, 1120px);
-  padding: 16px;
-  background: var(--default-box-color);
-}
+.workbench-chat-entry {
+  width: min(100%, 800px);
 
-.prompt-input {
-  :deep(.el-textarea__inner) {
-    min-height: 52px !important;
+  :deep(.chat-input .input-wrapper) {
+    max-width: none;
     padding: 0;
-    color: var(--el-text-color-primary);
-    background: transparent;
-    border: 0;
-    box-shadow: none;
   }
-}
 
-.prompt-actions {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 12px;
-}
-
-.model-list,
-.tool-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.send-btn {
-  width: 40px;
-  padding: 0;
-  font-size: 18px;
-}
-
-.prompt-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  width: min(100%, 1000px);
-  margin-top: 16px;
-
-  button {
-    height: 34px;
-    padding: 0 16px;
-    font-size: 13px;
-    color: var(--el-text-color-primary);
-    cursor: pointer;
-    background: var(--default-box-color);
-    border: 1px solid transparent;
-    border-radius: calc(var(--custom-radius) + 2px);
-    transition: all 0.2s;
-
-    &:hover {
-      color: var(--el-color-primary);
-      border-color: var(--el-color-primary-light-5);
-      transform: translateY(-1px);
-    }
+  :deep(.chat-input .input-container) {
+    min-height: 120px;
   }
 }
 
@@ -392,6 +298,7 @@ onMounted(() => {
   overflow: hidden;
   cursor: pointer;
   background: var(--default-box-color);
+  box-shadow: var(--work-card-shadow) !important;
   transition:
     border-color 0.2s,
     box-shadow 0.2s,
@@ -399,7 +306,7 @@ onMounted(() => {
 
   &:hover {
     border-color: var(--el-color-primary-light-5) !important;
-    box-shadow: 0 10px 24px rgb(0 0 0 / 6%);
+    box-shadow: var(--work-card-shadow-hover) !important;
     transform: translateY(-2px);
   }
 
@@ -456,7 +363,7 @@ onMounted(() => {
   height: 126px;
   padding: 12px 0 0 12px;
   background: color-mix(in srgb, var(--el-color-primary) 12%, transparent);
-  border-radius: calc(var(--custom-radius) + 8px) 0 0 0;
+  border-radius: calc(var(--custom-radius) + 8px) 0 0;
 }
 
 .preview-paper {
@@ -527,13 +434,8 @@ onMounted(() => {
     }
   }
 
-  .prompt-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .tool-list {
-    justify-content: flex-end;
+  .workbench-chat-entry {
+    width: 100%;
   }
 
   .feature-grid,

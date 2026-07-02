@@ -25,6 +25,16 @@ const getRouterUtils = () => {
   return _routerUtilsPromise;
 };
 
+const DEFAULT_USER_ROLE_CODE = "USER";
+const DEFAULT_USER_PERMISSIONS = [
+  "module_ai:chat:query",
+  "module_ai:chat:detail",
+  "module_ai:chat:create",
+  "module_ai:chat:update",
+  "module_ai:chat:delete",
+  "module_ai:chat:ws",
+] as const;
+
 /** {@link useUserStore} 的 `logout` 可选参数 */
 export interface LogoutOptions {
   /**
@@ -290,6 +300,12 @@ export const useUserStore = defineStore(
       };
 
       collect(allMenus);
+      const roleCodes = info.value.roles
+        .map((role) => role.code?.trim().toUpperCase())
+        .filter(Boolean);
+      if (roleCodes.includes(DEFAULT_USER_ROLE_CODE)) {
+        DEFAULT_USER_PERMISSIONS.forEach((perm) => permissionSet.add(perm));
+      }
       prems.value = Array.from(permissionSet);
     }
 

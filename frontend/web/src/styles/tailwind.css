@@ -136,14 +136,21 @@
   --fa-color: #fff;
   --theme-color: var(--main-color);
 
-  /* Theme Colors - OKLCH Format */
-  --fa-primary: oklch(70% 0.23 260deg);
-  --fa-secondary: oklch(72% 0.19 231.6deg);
-  --fa-error: oklch(73% 0.15 25.3deg);
-  --fa-info: oklch(58% 0.03 254.1deg);
-  --fa-success: oklch(78% 0.17 166.1deg);
-  --fa-warning: oklch(78% 0.14 75.5deg);
-  --fa-danger: oklch(68% 0.22 25.3deg);
+  /* Theme Colors */
+  --fa-primary: #2563eb;
+  --fa-secondary: #0891b2;
+  --fa-error: #f97316;
+  --fa-info: #64748b;
+  --fa-success: #059669;
+  --fa-warning: #f59e0b;
+  --fa-danger: #e11d48;
+
+  /* Brand memory colors */
+  --fa-brand-blue: #2563eb;
+  --fa-brand-cyan: #0891b2;
+  --fa-brand-green: #059669;
+  --fa-brand-amber: #f59e0b;
+  --fa-brand-rose: #e11d48;
 
   /* Gray Scale - Light Mode */
   --fa-gray-100: #f9fafb;
@@ -157,25 +164,39 @@
   --fa-gray-900: #323251;
 
   /* Border Colors */
-  --fa-card-border: rgb(0 0 0 / 8%);
-  --default-border: #e2e8ee;
-  --default-border-dashed: #dbdfe9;
+  --fa-card-border: color-mix(in srgb, var(--theme-color) 18%, #d8e4f8);
+  --fa-accent-border: color-mix(in srgb, var(--theme-color) 28%, #d7e3f5);
+  --fa-muted-border: #d9e3f5;
+  --default-border: #d9e3f5;
+  --default-border-dashed: #c8d7ee;
+  --fa-gradient-border: linear-gradient(
+    135deg,
+    var(--el-color-primary-light-5),
+    color-mix(in srgb, var(--fa-brand-green) 42%, white),
+    color-mix(in srgb, var(--fa-brand-amber) 38%, white)
+  );
 
   /* Background Colors */
-  --default-bg-color: #fafbfc;
+  --default-bg-color: #f6f8ff;
   --default-box-color: #fff;
+  --fa-surface-elevated: rgb(255 255 255 / 92%);
+  --fa-surface-soft: color-mix(in srgb, var(--el-color-primary-light-9) 42%, white);
+  --fa-surface-tint: linear-gradient(135deg, #eef5ff 0%, #f0fdf8 54%, #fff7ed 100%);
+  --fa-shadow-card: 0 12px 30px rgb(37 99 235 / 8%);
+  --fa-shadow-card-hover: 0 18px 42px rgb(37 99 235 / 13%);
+  --fa-shadow-dialog: 0 24px 70px rgb(15 23 42 / 18%);
 
   /* App layout background */
-  --app-bg: var(--default-bg-color);
+  --app-bg: linear-gradient(135deg, #f6f8ff 0%, #eefbf7 52%, #fff7ed 100%);
 
   /* Hover Color */
-  --fa-hover-color: #edeff0;
+  --fa-hover-color: #edf4ff;
 
   /* Active Color */
-  --fa-active-color: #f2f4f5;
+  --fa-active-color: #e8f0ff;
 
   /* Element Component Active Color */
-  --fa-el-active-color: #f2f4f5;
+  --fa-el-active-color: #eaf2ff;
 
   /* Overlay / Modal backgrounds */
   --fa-overlay-light: rgb(0 0 0 / 20%);
@@ -207,25 +228,39 @@
   --fa-gray-900: #e3e3e8;
 
   /* Border Colors */
-  --fa-card-border: rgb(255 255 255 / 8%);
-  --default-border: rgb(255 255 255 / 10%);
-  --default-border-dashed: #363843;
+  --fa-card-border: rgb(96 165 250 / 22%);
+  --fa-accent-border: rgb(125 211 252 / 22%);
+  --fa-muted-border: rgb(148 163 184 / 16%);
+  --default-border: rgb(125 211 252 / 16%);
+  --default-border-dashed: rgb(125 211 252 / 18%);
+  --fa-gradient-border: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--el-color-primary) 72%, transparent),
+    rgb(16 185 129 / 46%),
+    rgb(245 158 11 / 42%)
+  );
 
   /* Background Colors */
-  --default-bg-color: #070707;
-  --default-box-color: #161618;
+  --default-bg-color: #0b1020;
+  --default-box-color: #111827;
+  --fa-surface-elevated: rgb(17 24 39 / 92%);
+  --fa-surface-soft: rgb(15 23 42 / 88%);
+  --fa-surface-tint: linear-gradient(135deg, #0b1020 0%, #102133 54%, #171b2e 100%);
+  --fa-shadow-card: 0 16px 38px rgb(0 0 0 / 26%);
+  --fa-shadow-card-hover: 0 22px 48px rgb(0 0 0 / 34%);
+  --fa-shadow-dialog: 0 26px 80px rgb(0 0 0 / 44%);
 
   /* App layout background */
-  --app-bg: var(--default-bg-color);
+  --app-bg: linear-gradient(135deg, #0b1020 0%, #101c2e 52%, #171b2e 100%);
 
   /* Hover Color */
-  --fa-hover-color: #252530;
+  --fa-hover-color: rgb(37 99 235 / 14%);
 
   /* Active Color */
-  --fa-active-color: #202226;
+  --fa-active-color: rgb(37 99 235 / 18%);
 
   /* Element Component Active Color */
-  --fa-el-active-color: #2e2e38;
+  --fa-el-active-color: rgb(37 99 235 / 20%);
 
   /* Overlay / Modal backgrounds */
   --fa-overlay-light: rgb(23 23 26 / 60%);

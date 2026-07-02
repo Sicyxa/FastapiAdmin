@@ -13,7 +13,7 @@
           <ElInput
             v-model="inputMessage"
             type="textarea"
-            :placeholder="placeholder"
+            placeholder="向星宇智能助手发送消息..."
             :disabled="disabled || sending"
             :autosize="{ minRows: 1, maxRows: 6 }"
             resize="none"
@@ -75,6 +75,7 @@
           </div>
           <div class="input-actions">
             <ElUpload
+              v-if="enableUpload"
               ref="uploadRef"
               :auto-upload="false"
               :show-file-list="false"
@@ -107,7 +108,7 @@
           </div>
         </div>
       </div>
-      <div class="input-hint">
+      <div v-if="showHint" class="input-hint">
         <span>按 Enter 发送消息，Shift + Enter 换行</span>
       </div>
     </div>
@@ -135,7 +136,8 @@ import AiChatAPI, { type AiModelConfigItem, type AiModelConfigList } from "@/api
 interface Props {
   disabled?: boolean;
   sending?: boolean;
-  isConnected?: boolean;
+  enableUpload?: boolean;
+  showHint?: boolean;
 }
 
 interface Emits {
@@ -147,7 +149,8 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   sending: false,
-  isConnected: true,
+  enableUpload: true,
+  showHint: true,
 });
 
 const emit = defineEmits<Emits>();
@@ -211,10 +214,6 @@ const uploadedFiles = ref<UploadedFile[]>([]);
 
 const acceptTypes = computed(() => {
   return ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.mp3,.wav,.mp4,.avi,.mov";
-});
-
-const placeholder = computed(() => {
-  return props.isConnected ? "向星宇智能助手发送消息..." : "请先连接到服务器";
 });
 
 const handleFileChange = (uploadFile: UploadFile) => {
@@ -296,8 +295,10 @@ defineExpose({
         align-items: center;
         padding: 8px 14px;
         font-size: 13px;
-        background: var(--el-fill-color-light);
-        border: 1px solid var(--el-border-color-light);
+        background:
+          linear-gradient(var(--fa-surface-elevated), var(--fa-surface-elevated)) padding-box,
+          var(--fa-gradient-border) border-box;
+        border: 1px solid transparent;
         border-radius: 8px;
         transition: all 0.2s ease;
 
@@ -342,24 +343,30 @@ defineExpose({
       flex-direction: column;
       gap: 12px;
       padding: 20px;
-      background: var(--el-bg-color-overlay);
-      border: 1px solid var(--el-border-color-light);
+      background:
+        linear-gradient(180deg, rgb(255 255 255 / 96%), rgb(255 255 255 / 86%)) padding-box,
+        var(--fa-gradient-border) border-box;
+      border: 1px solid transparent;
       border-radius: 16px;
-      box-shadow: var(--el-box-shadow-light);
+      box-shadow:
+        0 16px 38px rgb(37 99 235 / 12%),
+        0 0 0 1px rgb(255 255 255 / 70%) inset;
       transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease,
         transform 0.2s ease;
 
       &:hover {
-        border-color: var(--el-color-primary);
-        box-shadow: var(--el-box-shadow);
+        box-shadow:
+          0 18px 40px rgb(31 45 61 / 12%),
+          0 0 0 1px var(--el-color-primary-light-7) inset;
         transform: translateY(-2px);
       }
 
       &:focus-within {
-        border-color: var(--el-color-primary);
-        box-shadow: 0 0 0 1px var(--el-color-primary);
+        box-shadow:
+          0 18px 40px rgb(31 45 61 / 12%),
+          0 0 0 2px var(--el-color-primary-light-6) inset;
       }
 
       .message-input {
@@ -402,8 +409,10 @@ defineExpose({
           font-size: 13px;
           color: var(--el-text-color-regular);
           cursor: pointer;
-          background: var(--el-fill-color-blank);
-          border: 1px solid var(--el-border-color-light);
+          background:
+            linear-gradient(var(--el-fill-color-blank), var(--el-fill-color-blank)) padding-box,
+            var(--fa-gradient-border) border-box;
+          border: 1px solid transparent;
           border-radius: 6px;
           transition: all 0.2s;
 
@@ -453,6 +462,7 @@ defineExpose({
           .upload-btn {
             font-size: 18px;
             color: var(--el-text-color-secondary);
+            border-color: var(--el-color-primary-light-7);
             transition: all 0.2s ease;
 
             &:hover {
@@ -464,7 +474,7 @@ defineExpose({
           .send-button {
             flex-shrink: 0;
             border-radius: 50%;
-            box-shadow: var(--el-box-shadow-light);
+            box-shadow: 0 10px 22px rgb(64 158 255 / 22%);
             transition: all 0.2s ease;
 
             &:hover {
@@ -503,6 +513,18 @@ defineExpose({
     &:focus-within {
       border-color: var(--el-border-color-light);
       box-shadow: var(--el-box-shadow-light);
+    }
+  }
+}
+
+:global(html.dark) .chat-input {
+  .input-wrapper {
+    .uploaded-files .file-item,
+    .input-container {
+      background:
+        linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
+        var(--fa-gradient-border) border-box;
+      box-shadow: 0 16px 38px rgb(0 0 0 / 26%);
     }
   }
 }

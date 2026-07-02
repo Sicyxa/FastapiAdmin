@@ -65,7 +65,7 @@ export const SETTING_DEFAULT_CONFIG = {
   /** 语言 */
   language: LanguageEnum.ZH_CN,
   /** 主题颜色 */
-  themeColor: "#4080FF",
+  themeColor: "#2563EB",
   /** 是否显示水印 */
   showWatermark: false,
   /** 水印内容 */

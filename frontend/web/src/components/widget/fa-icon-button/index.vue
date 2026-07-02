@@ -24,6 +24,24 @@ withDefaults(defineProps<Props>(), {});
 
 <style lang="scss" scoped>
 .fa-icon-button {
+  border: 1px solid transparent;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    color: var(--el-color-primary);
+    background:
+      linear-gradient(var(--fa-surface-elevated), var(--fa-surface-elevated)) padding-box,
+      var(--fa-gradient-border) border-box !important;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgb(37 99 235 / 12%);
+    transform: translateY(-1px);
+  }
+
   &:hover :deep(.fa-svg-icon) {
     color: var(--el-color-primary);
   }

@@ -359,9 +359,13 @@ watch(menuOpen, (isMenuOpen: boolean) => {
 .layout-sidebar {
   display: flex;
   height: 100vh;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 88%), rgb(239 246 255 / 72%)),
+    linear-gradient(180deg, var(--el-color-primary-light-9), rgb(240 253 244 / 70%));
   user-select: none;
   scrollbar-width: none;
-  border-right: 1px solid var(--fa-card-border);
+  border-right: 1px solid var(--fa-accent-border);
+  box-shadow: 8px 0 28px rgb(37 99 235 / 6%);
 
   &.no-border {
     border-right: none !important;
@@ -381,7 +385,10 @@ watch(menuOpen, (isMenuOpen: boolean) => {
     position: relative;
     width: 80px;
     height: 100%;
-    border-right: 1px solid var(--fa-card-border) !important;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 84%), rgb(239 246 255 / 72%)),
+      linear-gradient(180deg, var(--el-color-primary-light-9), rgb(240 253 244 / 70%)) !important;
+    border-right: 1px solid var(--fa-accent-border) !important;
     transition: width 0.25s;
 
     .logo {
@@ -448,6 +455,12 @@ watch(menuOpen, (isMenuOpen: boolean) => {
     box-sizing: border-box;
     height: 100vh;
 
+    &.menu-left-design {
+      background:
+        linear-gradient(180deg, rgb(255 255 255 / 90%), rgb(239 246 255 / 76%)),
+        linear-gradient(180deg, var(--el-color-primary-light-9), rgb(240 253 244 / 72%)) !important;
+    }
+
     @media only screen and (width <= 640px) {
       height: 100dvh;
     }
@@ -470,8 +483,10 @@ watch(menuOpen, (isMenuOpen: boolean) => {
       width: 11px;
       height: 50px;
       cursor: pointer;
-      background-color: var(--default-box-color);
-      border: 1px solid var(--fa-card-border);
+      background:
+        linear-gradient(var(--fa-surface-elevated), var(--fa-surface-elevated)) padding-box,
+        var(--fa-gradient-border) border-box;
+      border: 1px solid transparent;
       border-radius: 0 15px 15px 0;
       opacity: 0;
       transform: translateY(-50%);
@@ -504,6 +519,17 @@ watch(menuOpen, (isMenuOpen: boolean) => {
     overflow: hidden;
     line-height: 60px;
     cursor: pointer;
+
+    &::after {
+      position: absolute;
+      right: 14px;
+      bottom: 0;
+      left: 14px;
+      height: 1px;
+      content: "";
+      background: var(--fa-gradient-border);
+      opacity: 0.8;
+    }
 
     .logo {
       margin-left: 22px;
@@ -607,6 +633,21 @@ watch(menuOpen, (isMenuOpen: boolean) => {
     }
   }
 }
+
+:global(.dark) .layout-sidebar {
+  background:
+    linear-gradient(180deg, rgb(17 24 39 / 88%), rgb(15 23 42 / 78%)),
+    linear-gradient(180deg, rgb(37 99 235 / 18%), rgb(5 150 105 / 12%));
+  border-right-color: var(--fa-accent-border);
+  box-shadow: 8px 0 28px rgb(0 0 0 / 22%);
+
+  .dual-menu-left,
+  .menu-left.menu-left-design {
+    background:
+      linear-gradient(180deg, rgb(17 24 39 / 88%), rgb(15 23 42 / 78%)),
+      linear-gradient(180deg, rgb(37 99 235 / 18%), rgb(5 150 105 / 12%)) !important;
+  }
+}
 </style>
 
 <style lang="scss">
@@ -624,8 +665,10 @@ $popup-menu-radius: 6px;
 
 /* 通用菜单项样式 */
 @mixin menu-item-base {
+  position: relative;
   width: calc(100% - 16px);
   margin-left: 8px;
+  overflow: hidden;
   border-radius: 6px;
 
   .menu-icon {
@@ -645,12 +688,24 @@ $popup-menu-radius: 6px;
 @mixin menu-active($color, $bg-color, $icon-color: var(--theme-color)) {
   .el-menu-item.is-active {
     color: $color !important;
-    background-color: $bg-color;
+    background: $bg-color;
+    box-shadow: 0 8px 18px rgb(37 99 235 / 10%);
 
     .menu-icon {
       .art-svg-icon {
         color: $icon-color !important;
       }
+    }
+
+    &::before {
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: 0;
+      width: 3px;
+      content: "";
+      background: linear-gradient(180deg, var(--el-color-primary), var(--fa-brand-green));
+      border-radius: 0 999px 999px 0;
     }
   }
 }
@@ -766,8 +821,21 @@ $popup-menu-radius: 6px;
   /* ---------------------- Design theme menu ---------------------- */
   .el-menu-design {
     @include theme-menu-base;
-    @include menu-active(var(--theme-color), var(--el-color-primary-light-9));
-    @include menu-hover($hover-bg-color);
+    @include menu-active(
+      var(--theme-color),
+      linear-gradient(
+        90deg,
+        var(--el-color-primary-light-9),
+        color-mix(in srgb, var(--fa-brand-green) 10%, transparent)
+      )
+    );
+    @include menu-hover(
+      linear-gradient(
+        90deg,
+        var(--el-color-primary-light-9),
+        color-mix(in srgb, var(--fa-brand-amber) 8%, transparent)
+      )
+    );
 
     .el-sub-menu__icon-arrow {
       color: var(--fa-gray-600);
@@ -795,7 +863,12 @@ $popup-menu-radius: 6px;
     }
 
     .el-menu-item.is-active {
-      background-color: var(--el-color-primary-light-9);
+      background:
+        linear-gradient(
+          90deg,
+          var(--el-color-primary-light-9),
+          color-mix(in srgb, var(--fa-brand-green) 10%, transparent)
+        );
 
       .art-svg-icon {
         color: var(--theme-color) !important;

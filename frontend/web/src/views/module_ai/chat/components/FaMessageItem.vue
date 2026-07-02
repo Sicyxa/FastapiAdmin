@@ -122,7 +122,7 @@ const formatFileSize = (bytes: number): string => {
 .message-group {
   display: flex;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 
   .message-avatar {
     flex-shrink: 0;
@@ -135,8 +135,9 @@ const formatFileSize = (bytes: number): string => {
       height: 32px;
       font-size: 14px;
       color: white;
-      background: var(--el-color-primary);
+      background: linear-gradient(135deg, var(--el-color-primary), var(--el-color-success));
       border-radius: 6px;
+      box-shadow: 0 8px 18px rgb(64 158 255 / 24%);
     }
 
     .ai-avatar {
@@ -147,8 +148,9 @@ const formatFileSize = (bytes: number): string => {
       height: 32px;
       font-size: 14px;
       color: white;
-      background: var(--el-color-success);
+      background: linear-gradient(135deg, var(--el-color-success), var(--el-color-warning));
       border-radius: 6px;
+      box-shadow: 0 8px 18px rgb(103 194 58 / 22%);
     }
   }
 
@@ -186,6 +188,9 @@ const formatFileSize = (bytes: number): string => {
     }
 
     .message-body {
+      max-width: min(100%, 720px);
+      position: relative;
+
       .message-files {
         display: flex;
         flex-wrap: wrap;
@@ -198,7 +203,8 @@ const formatFileSize = (bytes: number): string => {
           align-items: center;
           padding: 8px 12px;
           font-size: 12px;
-          background: var(--el-fill-color-light);
+          background: linear-gradient(135deg, var(--el-color-primary-light-9), var(--el-fill-color-light));
+          border: 1px solid var(--el-color-primary-light-7);
           border-radius: 6px;
 
           .file-icon {
@@ -310,13 +316,31 @@ const formatFileSize = (bytes: number): string => {
       }
 
       .message-body .message-text {
+        position: relative;
         padding: 10px 14px;
-        background: var(--el-color-primary-light-9);
-        border: 1px solid var(--el-border-color-light);
-        border-radius: 12px;
+        background:
+          linear-gradient(135deg, rgb(239 246 255 / 92%), rgb(236 253 245 / 86%))
+            padding-box,
+          var(--fa-gradient-border) border-box;
+        border: 1px solid transparent;
+        border-radius: 12px 12px 4px;
+        box-shadow:
+          0 10px 26px rgb(37 99 235 / 13%),
+          0 0 0 1px rgb(255 255 255 / 62%) inset;
+
+        &::before {
+          position: absolute;
+          top: 10px;
+          right: -1px;
+          bottom: 10px;
+          width: 3px;
+          content: "";
+          background: linear-gradient(180deg, var(--el-color-primary), var(--fa-brand-green));
+          border-radius: 999px 0 0 999px;
+        }
 
         &.collapsed::after {
-          background: linear-gradient(transparent, var(--el-color-primary-light-9));
+          background: linear-gradient(transparent, rgb(236 253 245 / 92%));
         }
       }
     }
@@ -327,7 +351,50 @@ const formatFileSize = (bytes: number): string => {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+
+      .message-body {
+        position: relative;
+        padding: 12px 14px;
+        background:
+          linear-gradient(180deg, rgb(255 255 255 / 94%), rgb(255 255 255 / 84%)) padding-box,
+          var(--fa-gradient-border) border-box;
+        border: 1px solid transparent;
+        border-radius: 12px 12px 12px 4px;
+        box-shadow:
+          0 12px 30px rgb(37 99 235 / 10%),
+          0 0 0 1px rgb(255 255 255 / 64%) inset;
+
+        &::before {
+          position: absolute;
+          top: 12px;
+          bottom: 12px;
+          left: -1px;
+          width: 3px;
+          content: "";
+          background: linear-gradient(
+            180deg,
+            var(--fa-brand-green),
+            var(--el-color-primary),
+            var(--fa-brand-amber)
+          );
+          border-radius: 0 999px 999px 0;
+        }
+
+        .message-text.collapsed::after {
+          background: linear-gradient(transparent, rgb(255 255 255 / 92%));
+        }
+      }
     }
+  }
+}
+
+html.dark .message-group {
+  &.assistant .message-content .message-body,
+  &.user .message-content .message-body .message-text {
+    background:
+      linear-gradient(180deg, var(--el-bg-color-overlay), var(--el-fill-color-dark)) padding-box,
+      var(--fa-gradient-border) border-box;
+    box-shadow: 0 12px 30px rgb(0 0 0 / 28%);
   }
 }
 
