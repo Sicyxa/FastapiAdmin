@@ -18,23 +18,29 @@
   --theme-color: var(--main-color);
   --el-color-white: white !important;
   --el-color-black: white !important; // EP dark 模式下用 white 色值
+  --el-border-width: var(--fa-shell-border-width) !important;
+  --el-border-color: var(--default-border) !important;
+  --el-border-color-light: color-mix(in srgb, var(--default-border) 82%, white) !important;
+  --el-border-color-lighter: color-mix(in srgb, var(--default-border) 62%, white) !important;
+  --el-fill-color-blank: var(--default-box-color) !important;
+  --el-bg-color-page: var(--default-bg-color) !important;
 
   // ── 按钮 ──
-  --el-button-hover-bg-color: var(--el-color-primary-light-9, #e8f2ff) !important;
+  --el-button-hover-bg-color: var(--el-color-primary-light-9, #ffe4f0) !important;
   --el-button-hover-border-color: var(--el-color-primary) !important;
   --el-button-border-color: var(--el-color-primary) !important;
   --el-button-text-color: var(--el-color-primary) !important;
-  --el-font-weight-primary: 400 !important;
+  --el-font-weight-primary: 500 !important;
 
   // ── 组件尺寸 ──
-  --el-component-custom-height: 36px !important;
+  --el-component-custom-height: 42px !important;
   --el-component-size: var(--el-component-custom-height) !important;
 
   // ── 圆角 ──
-  --el-border-radius-base: calc(var(--custom-radius) / 3 + 2px) !important;
-  --el-border-radius-small: calc(var(--custom-radius) / 3 + 4px) !important;
-  --el-messagebox-border-radius: calc(var(--custom-radius) / 3 + 4px) !important;
-  --el-popover-border-radius: calc(var(--custom-radius) / 3 + 4px) !important;
+  --el-border-radius-base: calc(var(--custom-radius) / 2 + 6px) !important;
+  --el-border-radius-small: calc(var(--custom-radius) / 2 + 4px) !important;
+  --el-messagebox-border-radius: calc(var(--custom-radius) / 2 + 6px) !important;
+  --el-popover-border-radius: calc(var(--custom-radius) / 2 + 6px) !important;
 
   .region .el-radio-button__original-radio:checked + .el-radio-button__inner {
     color: var(--theme-color);
@@ -88,8 +94,8 @@ html.dark .el-card {
     transform 0.2s ease;
 
   &:hover {
-    box-shadow: 0 8px 18px rgb(37 99 235 / 12%);
-    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgb(79 107 255 / 16%);
+    transform: translateY(-2px);
   }
 
   &:active {
@@ -99,31 +105,58 @@ html.dark .el-card {
 
 .el-button--primary:not(.el-button--text):not(.is-link) {
   color: #fff !important;
-  background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-cyan)) !important;
+  background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-blue)) !important;
   border-color: transparent !important;
-  box-shadow: 0 10px 22px rgb(37 99 235 / 22%);
+  box-shadow: 0 14px 28px rgb(79 107 255 / 24%);
 
   &:hover,
   &:focus {
-    background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-green)) !important;
-    box-shadow: 0 12px 26px rgb(37 99 235 / 28%);
+    background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-rose)) !important;
+    box-shadow: 0 16px 32px rgb(111 82 255 / 28%);
   }
 
   &.is-plain {
     color: var(--el-color-primary) !important;
     background:
       linear-gradient(var(--fa-surface-elevated), var(--fa-surface-elevated)) padding-box,
-      linear-gradient(135deg, var(--el-color-primary-light-5), var(--fa-brand-green)) border-box !important;
+      linear-gradient(135deg, var(--el-color-primary-light-5), var(--fa-brand-blue)) border-box !important;
     border-color: transparent !important;
     box-shadow: none;
 
     &:hover,
     &:focus {
       color: #fff !important;
-      background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-green)) !important;
-      box-shadow: 0 10px 22px rgb(37 99 235 / 22%);
+      background: linear-gradient(135deg, var(--el-color-primary), var(--fa-brand-rose)) !important;
+      box-shadow: 0 12px 24px rgb(79 107 255 / 22%);
     }
   }
+}
+
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner,
+.el-input-number,
+.el-date-editor.el-input__wrapper {
+  box-shadow: 0 0 0 var(--fa-shell-border-width) var(--default-border) inset !important;
+  background: color-mix(in srgb, var(--default-box-color) 94%, white) !important;
+}
+
+.el-input__wrapper:hover,
+.el-select__wrapper:hover,
+.el-textarea__inner:hover,
+.el-input-number:hover,
+.el-date-editor.el-input__wrapper:hover {
+  box-shadow: 0 0 0 var(--fa-shell-border-width) var(--fa-accent-border) inset !important;
+}
+
+.is-focus.el-input__wrapper,
+.el-select__wrapper.is-focused,
+.el-textarea__inner:focus,
+.el-input-number:focus-within,
+.el-date-editor.el-input__wrapper.is-focus {
+  box-shadow:
+    0 0 0 var(--fa-shell-border-width) var(--el-color-primary) inset,
+    0 0 0 4px color-mix(in srgb, var(--el-color-primary) 10%, transparent) !important;
 }
 
 // 优化菜单折叠展开动画（提升动画流畅度）
@@ -174,7 +207,7 @@ html.dark .el-card {
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box !important;
-  border: 1px solid transparent !important;
+  border: var(--fa-shell-border-width) solid transparent !important;
   border-radius: var(--el-border-radius-small) !important;
   box-shadow: var(--fa-shadow-card);
 }
@@ -183,7 +216,7 @@ html.dark .el-card {
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box !important;
-  border: 1px solid transparent !important;
+  border: var(--fa-shell-border-width) solid transparent !important;
   box-shadow: var(--fa-shadow-card);
 }
 
@@ -191,9 +224,10 @@ html.dark .el-card {
   background: linear-gradient(
     90deg,
     var(--el-color-primary-light-9),
-    color-mix(in srgb, var(--fa-brand-green) 10%, transparent)
+    color-mix(in srgb, var(--fa-brand-blue) 18%, transparent),
+    color-mix(in srgb, var(--fa-brand-rose) 14%, transparent)
   );
-  border-bottom: 1px solid var(--fa-accent-border) !important;
+  border-bottom: var(--fa-shell-border-width) solid var(--fa-accent-border) !important;
 }
 
 .el-dialog {
@@ -201,7 +235,7 @@ html.dark .el-card {
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box !important;
-  border: 1px solid transparent;
+  border: var(--fa-shell-border-width) solid transparent;
   border-radius: calc(var(--custom-radius) / 1.2 + 2px) !important;
   box-shadow: var(--fa-shadow-dialog);
 }
@@ -211,10 +245,11 @@ html.dark .el-card {
   background: linear-gradient(
     90deg,
     var(--el-color-primary-light-9),
-    color-mix(in srgb, var(--fa-brand-green) 12%, transparent),
-    color-mix(in srgb, var(--fa-brand-amber) 10%, transparent)
+    color-mix(in srgb, var(--fa-brand-blue) 20%, transparent),
+    color-mix(in srgb, var(--fa-brand-rose) 16%, transparent),
+    color-mix(in srgb, var(--fa-brand-amber) 12%, transparent)
   );
-  border-bottom: 1px solid var(--fa-accent-border);
+  border-bottom: var(--fa-shell-border-width) solid var(--fa-accent-border);
 
   .el-dialog__title {
     display: inline-flex;
@@ -227,9 +262,9 @@ html.dark .el-card {
     &::before {
       display: inline-block;
       width: 4px;
-      height: 18px;
+      height: 20px;
       content: "";
-      background: linear-gradient(180deg, var(--el-color-primary), var(--fa-brand-green));
+      background: linear-gradient(180deg, var(--el-color-primary), var(--fa-brand-blue));
       border-radius: 999px;
     }
   }
@@ -266,14 +301,14 @@ html.dark .el-card {
 
 .el-dialog__footer {
   padding-top: 12px !important;
-  border-top: 1px solid var(--fa-muted-border);
+  border-top: var(--fa-shell-border-width) solid var(--fa-muted-border);
 }
 
 .el-drawer {
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box !important;
-  border-left: 1px solid transparent;
+  border-left: var(--fa-shell-border-width) solid transparent;
   box-shadow: var(--fa-shadow-dialog);
 }
 
@@ -283,9 +318,9 @@ html.dark .el-card {
   background: linear-gradient(
     90deg,
     var(--el-color-primary-light-9),
-    color-mix(in srgb, var(--fa-brand-green) 12%, transparent)
+    color-mix(in srgb, var(--fa-brand-blue) 18%, transparent)
   );
-  border-bottom: 1px solid var(--fa-accent-border);
+  border-bottom: var(--fa-shell-border-width) solid var(--fa-accent-border);
 }
 
 .el-drawer__body {
@@ -302,8 +337,8 @@ html.dark .el-card {
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box !important;
-  border: 1px solid transparent !important;
-  border-left: 3px solid var(--el-color-primary) !important;
+  border: var(--fa-shell-border-width) solid transparent !important;
+  border-left: 6px solid var(--el-color-primary) !important;
   box-shadow:
     0 6px 16px 0 rgb(0 0 0 / 8%),
     0 3px 6px -4px rgb(0 0 0 / 12%),
@@ -320,7 +355,7 @@ html.dark .el-card {
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box !important;
-  border: 1px solid transparent !important;
+  border: var(--fa-shell-border-width) solid transparent !important;
   border-radius: 10px !important;
   box-shadow: var(--fa-shadow-card);
 
@@ -333,7 +368,7 @@ html.dark .el-card {
       background: linear-gradient(
         90deg,
         var(--el-color-primary-light-9),
-        color-mix(in srgb, var(--fa-brand-green) 10%, transparent)
+        color-mix(in srgb, var(--fa-brand-blue) 16%, transparent)
       ) !important;
     }
 
@@ -490,7 +525,7 @@ html.dark .el-card {
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box !important;
-  border: 1px solid transparent !important;
+  border: var(--fa-shell-border-width) solid transparent !important;
   padding: 25px 20px !important;
   box-shadow: var(--fa-shadow-dialog);
 }
@@ -506,13 +541,13 @@ html.dark .el-card {
     width: 4px;
     height: 18px;
     content: "";
-    background: linear-gradient(180deg, var(--el-color-primary), var(--fa-brand-amber));
+    background: linear-gradient(180deg, var(--el-color-primary), var(--fa-brand-blue));
     border-radius: 999px;
   }
 }
 
 .el-message-box__content {
-  border-top: 1px solid var(--fa-muted-border);
+  border-top: var(--fa-shell-border-width) solid var(--fa-muted-border);
 }
 
 .el-table__column-filter-trigger i {
@@ -533,9 +568,10 @@ html.dark .el-card {
     background: linear-gradient(
       90deg,
       var(--el-color-primary-light-9),
-      color-mix(in srgb, var(--fa-brand-green) 8%, transparent)
+      color-mix(in srgb, var(--fa-brand-blue) 14%, transparent),
+      color-mix(in srgb, var(--fa-brand-rose) 10%, transparent)
     ) !important;
-    border-bottom: 1px solid var(--fa-accent-border) !important;
+    border-bottom: var(--fa-shell-border-width) solid var(--fa-accent-border) !important;
   }
 
   td.el-table__cell {
@@ -546,7 +582,7 @@ html.dark .el-card {
     background: linear-gradient(
       90deg,
       var(--el-color-primary-light-9),
-      color-mix(in srgb, var(--fa-brand-green) 7%, transparent)
+      color-mix(in srgb, var(--fa-brand-blue) 12%, transparent)
     ) !important;
   }
 }

@@ -130,6 +130,21 @@
   }
 }
 
+@layer base {
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+
+  body {
+    font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--fa-gray-900);
+    letter-spacing: 0.01em;
+    background: var(--app-bg);
+  }
+}
+
 /* ==================== Light Mode Variables ==================== */
 :root {
   /* Base Colors */
@@ -137,73 +152,79 @@
   --theme-color: var(--main-color);
 
   /* Theme Colors */
-  --fa-primary: #2563eb;
-  --fa-secondary: #0891b2;
-  --fa-error: #f97316;
-  --fa-info: #64748b;
-  --fa-success: #059669;
-  --fa-warning: #f59e0b;
-  --fa-danger: #e11d48;
+  --fa-primary: #4f6bff;
+  --fa-secondary: #6f52ff;
+  --fa-error: #ff7a59;
+  --fa-info: #6a7ea8;
+  --fa-success: #10a9a1;
+  --fa-warning: #f0b44b;
+  --fa-danger: #7b61ff;
 
   /* Brand memory colors */
-  --fa-brand-blue: #2563eb;
-  --fa-brand-cyan: #0891b2;
-  --fa-brand-green: #059669;
-  --fa-brand-amber: #f59e0b;
-  --fa-brand-rose: #e11d48;
+  --fa-brand-blue: #4f6bff;
+  --fa-brand-cyan: #4ea1ff;
+  --fa-brand-green: #10a9a1;
+  --fa-brand-amber: #f0b44b;
+  --fa-brand-rose: #7b61ff;
 
   /* Gray Scale - Light Mode */
-  --fa-gray-100: #f9fafb;
-  --fa-gray-200: #f2f4f5;
-  --fa-gray-300: #e6eaeb;
-  --fa-gray-400: #dbdfe1;
-  --fa-gray-500: #949eb7;
-  --fa-gray-600: #7987a1;
-  --fa-gray-700: #4d5875;
-  --fa-gray-800: #383853;
-  --fa-gray-900: #323251;
+  --fa-gray-100: #f8fbff;
+  --fa-gray-200: #edf3fb;
+  --fa-gray-300: #dbe5f4;
+  --fa-gray-400: #c2d0e6;
+  --fa-gray-500: #8c9dbd;
+  --fa-gray-600: #647796;
+  --fa-gray-700: #475a78;
+  --fa-gray-800: #2f4060;
+  --fa-gray-900: #1f2d47;
 
   /* Border Colors */
-  --fa-card-border: color-mix(in srgb, var(--theme-color) 18%, #d8e4f8);
-  --fa-accent-border: color-mix(in srgb, var(--theme-color) 28%, #d7e3f5);
-  --fa-muted-border: #d9e3f5;
-  --default-border: #d9e3f5;
-  --default-border-dashed: #c8d7ee;
+  --fa-shell-border-width: 2px;
+  --fa-card-border: color-mix(in srgb, var(--theme-color) 28%, #d7e4f7);
+  --fa-accent-border: color-mix(in srgb, var(--theme-color) 44%, #cfd7ff);
+  --fa-muted-border: #d9e3f4;
+  --default-border: #cad7ee;
+  --default-border-dashed: #b8c7e4;
+  --fa-line-strong: color-mix(in srgb, var(--theme-color) 30%, white);
   --fa-gradient-border: linear-gradient(
     135deg,
-    var(--el-color-primary-light-5),
-    color-mix(in srgb, var(--fa-brand-green) 42%, white),
-    color-mix(in srgb, var(--fa-brand-amber) 38%, white)
+    color-mix(in srgb, var(--el-color-primary) 76%, white),
+    color-mix(in srgb, var(--fa-brand-cyan) 62%, white),
+    color-mix(in srgb, var(--fa-brand-rose) 56%, white),
+    color-mix(in srgb, var(--fa-brand-amber) 42%, white)
   );
 
   /* Background Colors */
-  --default-bg-color: #f6f8ff;
-  --default-box-color: #fff;
-  --fa-surface-elevated: rgb(255 255 255 / 92%);
-  --fa-surface-soft: color-mix(in srgb, var(--el-color-primary-light-9) 42%, white);
-  --fa-surface-tint: linear-gradient(135deg, #eef5ff 0%, #f0fdf8 54%, #fff7ed 100%);
-  --fa-shadow-card: 0 12px 30px rgb(37 99 235 / 8%);
-  --fa-shadow-card-hover: 0 18px 42px rgb(37 99 235 / 13%);
-  --fa-shadow-dialog: 0 24px 70px rgb(15 23 42 / 18%);
+  --default-bg-color: #eef4ff;
+  --default-box-color: #fafdff;
+  --fa-surface-elevated: rgb(250 253 255 / 94%);
+  --fa-surface-soft: color-mix(in srgb, var(--el-color-primary-light-9) 68%, white);
+  --fa-surface-tint: linear-gradient(135deg, #f4f8ff 0%, #edf4ff 48%, #f6f7ff 100%);
+  --fa-shadow-card: 0 16px 36px rgb(79 107 255 / 12%);
+  --fa-shadow-card-hover: 0 22px 48px rgb(79 107 255 / 18%);
+  --fa-shadow-dialog: 0 32px 90px rgb(41 62 114 / 20%);
 
   /* App layout background */
-  --app-bg: linear-gradient(135deg, #f6f8ff 0%, #eefbf7 52%, #fff7ed 100%);
+  --app-bg:
+    radial-gradient(circle at top left, rgb(134 164 255 / 34%), transparent 24%),
+    radial-gradient(circle at top right, rgb(137 114 255 / 28%), transparent 26%),
+    linear-gradient(135deg, #edf4ff 0%, #eef5ff 44%, #f7f9ff 100%);
 
   /* Hover Color */
-  --fa-hover-color: #edf4ff;
+  --fa-hover-color: #e8efff;
 
   /* Active Color */
-  --fa-active-color: #e8f0ff;
+  --fa-active-color: #dde7ff;
 
   /* Element Component Active Color */
-  --fa-el-active-color: #eaf2ff;
+  --fa-el-active-color: #e2e9ff;
 
   /* Overlay / Modal backgrounds */
   --fa-overlay-light: rgb(0 0 0 / 20%);
   --fa-overlay-heavy: rgb(0 0 0 / 50%);
 
   /* Drawer backdrop */
-  --fa-drawer-bg: rgb(255 255 255 / 50%);
+  --fa-drawer-bg: rgb(243 247 255 / 65%);
 
   /* Tab pin (yellow bookmark) */
   --fa-tab-pin: #ca8a04;
@@ -217,50 +238,56 @@
   --fa-color: #000;
 
   /* Gray Scale - Dark Mode */
-  --fa-gray-100: #110f0f;
-  --fa-gray-200: #17171c;
-  --fa-gray-300: #393946;
-  --fa-gray-400: #505062;
-  --fa-gray-500: #73738c;
-  --fa-gray-600: #8f8fa3;
-  --fa-gray-700: #ababba;
-  --fa-gray-800: #c7c7d1;
-  --fa-gray-900: #e3e3e8;
+  --fa-gray-100: #0f1524;
+  --fa-gray-200: #151d31;
+  --fa-gray-300: #263352;
+  --fa-gray-400: #39486c;
+  --fa-gray-500: #66779d;
+  --fa-gray-600: #90a0c2;
+  --fa-gray-700: #b8c6df;
+  --fa-gray-800: #dae5f7;
+  --fa-gray-900: #eef4ff;
 
   /* Border Colors */
-  --fa-card-border: rgb(96 165 250 / 22%);
-  --fa-accent-border: rgb(125 211 252 / 22%);
-  --fa-muted-border: rgb(148 163 184 / 16%);
-  --default-border: rgb(125 211 252 / 16%);
-  --default-border-dashed: rgb(125 211 252 / 18%);
+  --fa-shell-border-width: 2px;
+  --fa-card-border: rgb(116 142 255 / 24%);
+  --fa-accent-border: rgb(117 97 255 / 28%);
+  --fa-muted-border: rgb(188 205 242 / 16%);
+  --default-border: rgb(116 142 255 / 22%);
+  --default-border-dashed: rgb(117 97 255 / 24%);
+  --fa-line-strong: color-mix(in srgb, var(--el-color-primary) 36%, white);
   --fa-gradient-border: linear-gradient(
     135deg,
     color-mix(in srgb, var(--el-color-primary) 72%, transparent),
-    rgb(16 185 129 / 46%),
-    rgb(245 158 11 / 42%)
+    rgb(78 161 255 / 42%),
+    rgb(123 97 255 / 36%),
+    rgb(16 169 161 / 26%)
   );
 
   /* Background Colors */
-  --default-bg-color: #0b1020;
-  --default-box-color: #111827;
-  --fa-surface-elevated: rgb(17 24 39 / 92%);
-  --fa-surface-soft: rgb(15 23 42 / 88%);
-  --fa-surface-tint: linear-gradient(135deg, #0b1020 0%, #102133 54%, #171b2e 100%);
-  --fa-shadow-card: 0 16px 38px rgb(0 0 0 / 26%);
-  --fa-shadow-card-hover: 0 22px 48px rgb(0 0 0 / 34%);
-  --fa-shadow-dialog: 0 26px 80px rgb(0 0 0 / 44%);
+  --default-bg-color: #0d1424;
+  --default-box-color: #121b30;
+  --fa-surface-elevated: rgb(18 27 48 / 92%);
+  --fa-surface-soft: rgb(23 35 60 / 86%);
+  --fa-surface-tint: linear-gradient(135deg, #0d1424 0%, #131d34 50%, #182547 100%);
+  --fa-shadow-card: 0 18px 44px rgb(0 0 0 / 34%);
+  --fa-shadow-card-hover: 0 24px 54px rgb(0 0 0 / 42%);
+  --fa-shadow-dialog: 0 32px 96px rgb(0 0 0 / 54%);
 
   /* App layout background */
-  --app-bg: linear-gradient(135deg, #0b1020 0%, #101c2e 52%, #171b2e 100%);
+  --app-bg:
+    radial-gradient(circle at top left, rgb(79 107 255 / 18%), transparent 22%),
+    radial-gradient(circle at top right, rgb(123 97 255 / 22%), transparent 26%),
+    linear-gradient(135deg, #0d1424 0%, #121a30 48%, #192446 100%);
 
   /* Hover Color */
-  --fa-hover-color: rgb(37 99 235 / 14%);
+  --fa-hover-color: rgb(79 107 255 / 14%);
 
   /* Active Color */
-  --fa-active-color: rgb(37 99 235 / 18%);
+  --fa-active-color: rgb(79 107 255 / 18%);
 
   /* Element Component Active Color */
-  --fa-el-active-color: rgb(37 99 235 / 20%);
+  --fa-el-active-color: rgb(123 97 255 / 20%);
 
   /* Overlay / Modal backgrounds */
   --fa-overlay-light: rgb(23 23 26 / 60%);
@@ -289,7 +316,7 @@
   /* Global-Search: input / dialog */
   --fa-input-bg: #333;
   --fa-input-border: #4c4d50;
-  --fa-dialog-bg: #252526;
+  --fa-dialog-bg: #18223c;
 
   /* Sidebar & Notification: scrollbar */
   --fa-scrollbar-thumb: #777;

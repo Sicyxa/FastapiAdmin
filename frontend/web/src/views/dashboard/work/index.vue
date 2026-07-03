@@ -19,10 +19,6 @@
       <section class="workplace-section">
         <div class="section-header">
           <h2>写长文神器</h2>
-          <ElButton text type="primary">
-            查看全部
-            <FaSvgIcon icon="ri:arrow-right-s-line" />
-          </ElButton>
         </div>
 
         <div class="feature-grid">
@@ -57,10 +53,6 @@
       <section class="workplace-section">
         <div class="section-header">
           <h2>AI 工具箱</h2>
-          <ElButton text type="primary">
-            管理工具
-            <FaSvgIcon icon="ri:settings-3-line" />
-          </ElButton>
         </div>
 
         <div class="tool-grid">
@@ -209,13 +201,14 @@ onMounted(() => {
 
 .workplace-hero {
   display: flex;
+  flex-shrink: 0;
   flex-direction: column;
   align-items: center;
-  padding: 6px 0 0;
+  padding: 0;
 
   .brand-heading {
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: center;
   }
 
@@ -223,32 +216,32 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 64px;
-    height: 64px;
-    font-size: 34px;
+    width: clamp(52px, 4vw, 64px);
+    height: clamp(52px, 4vw, 64px);
+    font-size: clamp(28px, 2.3vw, 34px);
     color: var(--el-color-primary);
     background: var(--default-box-color);
     border: 1px solid var(--fa-card-border);
-    border-radius: calc(var(--custom-radius) + 10px);
+    border-radius: calc(var(--custom-radius) + 8px);
   }
 
   h1 {
     margin: 0;
-    font-size: 34px;
+    font-size: clamp(28px, 2.6vw, 34px);
     font-weight: 700;
     line-height: 1.2;
     color: var(--el-text-color-primary);
   }
 
   p {
-    margin: 10px 0 26px;
-    font-size: 18px;
+    margin: 6px 0 14px;
+    font-size: clamp(15px, 1.4vw, 18px);
     color: var(--el-text-color-regular);
   }
 }
 
 .workbench-chat-entry {
-  width: min(100%, 800px);
+  width: min(100%, 760px);
 
   :deep(.chat-input .input-wrapper) {
     max-width: none;
@@ -256,20 +249,29 @@ onMounted(() => {
   }
 
   :deep(.chat-input .input-container) {
-    min-height: 120px;
+    min-height: 96px;
+    padding: 16px 18px 12px;
+    border-radius: 18px;
+  }
+
+  :deep(.chat-input .message-input .el-textarea__inner) {
+    min-height: 62px !important;
   }
 }
 
 .workplace-section {
+  display: flex;
+  flex-direction: column;
+
   .section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
 
     h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--el-text-color-primary);
     }
@@ -279,7 +281,7 @@ onMounted(() => {
 .feature-grid,
 .tool-grid {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .feature-grid {
@@ -293,8 +295,8 @@ onMounted(() => {
 .feature-card,
 .tool-card {
   position: relative;
-  min-height: 128px;
-  padding: 18px 20px;
+  min-height: 96px;
+  padding: 14px 16px;
   overflow: hidden;
   cursor: pointer;
   background: var(--default-box-color);
@@ -311,8 +313,8 @@ onMounted(() => {
   }
 
   h3 {
-    margin: 10px 0 8px;
-    font-size: 16px;
+    margin: 8px 0 6px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--el-text-color-primary);
   }
@@ -320,7 +322,7 @@ onMounted(() => {
   p {
     margin: 0;
     font-size: 13px;
-    line-height: 1.6;
+    line-height: 1.5;
     color: var(--el-text-color-secondary);
   }
 }
@@ -352,24 +354,24 @@ onMounted(() => {
 
 .feature-card.is-featured {
   grid-row: span 2;
-  min-height: 268px;
+  min-height: 206px;
 }
 
 .document-preview {
   position: absolute;
-  right: -16px;
-  bottom: -20px;
-  width: 170px;
-  height: 126px;
-  padding: 12px 0 0 12px;
+  right: -10px;
+  bottom: -12px;
+  width: 138px;
+  height: 98px;
+  padding: 8px 0 0 8px;
   background: color-mix(in srgb, var(--el-color-primary) 12%, transparent);
-  border-radius: calc(var(--custom-radius) + 8px) 0 0;
+  border-radius: calc(var(--custom-radius) + 6px) 0 0;
 }
 
 .preview-paper {
-  width: 140px;
-  height: 116px;
-  padding: 14px;
+  width: 116px;
+  height: 90px;
+  padding: 10px;
   background: var(--default-box-color);
   border: 1px solid var(--fa-card-border);
   border-radius: calc(var(--custom-radius) + 2px);
@@ -377,25 +379,25 @@ onMounted(() => {
 
   span {
     display: block;
-    width: 64px;
-    height: 6px;
-    margin-bottom: 12px;
+    width: 58px;
+    height: 5px;
+    margin-bottom: 10px;
     background: var(--el-color-primary-light-5);
     border-radius: 999px;
   }
 
   strong {
     display: block;
-    margin-bottom: 10px;
-    font-size: 12px;
+    margin-bottom: 6px;
+    font-size: 11px;
     line-height: 1.4;
     color: var(--el-text-color-primary);
   }
 
   p {
     width: 100%;
-    height: 5px;
-    margin: 7px 0 0;
+    height: 4px;
+    margin: 6px 0 0;
     background: var(--el-fill-color);
     border-radius: 999px;
 

@@ -722,6 +722,14 @@ watch(
   /* 外壳 padding（py-1 / pt-1 pb-0）会让内部分割线出现上下缝隙；用变量让分割线延伸到 padding 区 */
   --worktab-shell-pad-top: 4px;
   --worktab-shell-pad-bottom: 4px;
+  background:
+    linear-gradient(180deg, rgb(251 253 255 / 86%), rgb(241 246 255 / 76%)),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--el-color-primary-light-9) 88%, white),
+      color-mix(in srgb, var(--fa-brand-cyan) 12%, transparent),
+      color-mix(in srgb, var(--fa-brand-rose) 10%, transparent)
+    );
 }
 
 /* Google 标签模式：外壳 padding + 激活块 / 主题变量（与下方 Chrome 弧角样式共用） */
@@ -756,7 +764,7 @@ watch(
   left: 0;
   width: 1px;
   content: "";
-  background: var(--el-border-color-lighter);
+  background: color-mix(in srgb, var(--fa-line-strong) 55%, transparent);
 }
 
 .dark .worktab-toolbar-end::before {
@@ -781,7 +789,7 @@ watch(
   left: 0;
   width: 1px;
   content: "";
-  background: var(--el-border-color-lighter);
+  background: color-mix(in srgb, var(--fa-line-strong) 55%, transparent);
 }
 
 .dark .worktab-toolbar-end .worktab-bar-cell + .worktab-bar-cell::before {
@@ -811,24 +819,28 @@ watch(
   align-items: center;
   align-self: stretch;
   justify-content: center;
-  min-width: 2rem;
-  padding: 0 0.5rem;
+  min-width: 2.4rem;
+  padding: 0 0.75rem;
 }
 
 .worktab-tags-bar .worktab-bar-cell--sep-r {
   /* 左侧按钮分割线同样撑满外壳高度 */
   margin-top: calc(var(--worktab-shell-pad-top) * -1);
   margin-bottom: calc(var(--worktab-shell-pad-bottom) * -1);
-  border-right: 1px solid var(--el-border-color-lighter);
+  border-right: 1px solid color-mix(in srgb, var(--fa-line-strong) 55%, transparent);
 }
 
 .worktab-tags-bar .worktab-bar-btn:hover {
   color: var(--el-color-primary);
-  background-color: color-mix(in srgb, var(--el-color-primary) 10%, var(--el-fill-color-blank));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--el-color-primary) 14%, transparent),
+    color-mix(in srgb, var(--fa-brand-cyan) 10%, transparent)
+  );
 }
 
 .worktab-tags-bar .worktab-bar-btn:active {
-  background-color: color-mix(in srgb, var(--el-color-primary) 16%, var(--el-fill-color-blank));
+  background-color: color-mix(in srgb, var(--el-color-primary) 18%, var(--el-fill-color-blank));
 }
 
 .worktab-tags-bar .worktab-bar-btn:focus-visible {
@@ -857,6 +869,12 @@ watch(
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color-primary) 55%, transparent);
 }
 
+.dark .worktab-tags-shell {
+  background:
+    linear-gradient(180deg, rgb(19 28 48 / 88%), rgb(16 23 40 / 80%)),
+    linear-gradient(90deg, rgb(79 107 255 / 18%), rgb(123 97 255 / 16%), rgb(78 161 255 / 10%));
+}
+
 /* tab-card：胶囊 + 轻阴影（仅 .worktab-tab--card；Chrome 由 .google-tab 负责） */
 .worktab-tab.worktab-tab--card {
   gap: 6px;
@@ -870,7 +888,7 @@ watch(
   /* 卡片模式圆角不要半圆：与默认一致 */
   border-radius: calc(var(--custom-radius) / 2.5 + 2px) !important;
   box-shadow:
-    0 1px 2px rgb(0 0 0 / 5%),
+    0 8px 18px rgb(79 107 255 / 10%),
     inset 0 1px 0 rgb(255 255 255 / 45%);
   transition:
     border-color 0.18s ease,
@@ -895,19 +913,19 @@ watch(
 }
 
 .worktab-tab.worktab-tab--card.activ-tab {
-  background: color-mix(in srgb, var(--el-color-primary) 14%, var(--el-bg-color)) !important;
-  border-color: color-mix(in srgb, var(--el-color-primary) 50%, transparent) !important;
+  background: color-mix(in srgb, var(--el-color-primary) 16%, var(--el-bg-color)) !important;
+  border-color: color-mix(in srgb, var(--el-color-primary) 56%, transparent) !important;
   box-shadow:
-    0 2px 14px color-mix(in srgb, var(--el-color-primary) 20%, transparent),
+    0 12px 26px color-mix(in srgb, var(--el-color-primary) 20%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--el-color-primary) 28%, transparent);
 }
 
 /* 亮色：胶囊选中态与顶栏标签一致，用主题浅底 */
 html:not(.dark) .worktab-tab.worktab-tab--card.activ-tab {
   background: var(--el-color-primary-light-9) !important;
-  border-color: var(--el-color-primary-light-7) !important;
+  border-color: color-mix(in srgb, var(--el-color-primary) 45%, white) !important;
   box-shadow:
-    0 2px 14px color-mix(in srgb, var(--el-color-primary) 18%, transparent),
+    0 12px 24px color-mix(in srgb, var(--el-color-primary) 18%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--el-color-primary) 22%, transparent);
 }
 
@@ -981,9 +999,13 @@ html:not(.dark) .worktab-tags-shell--google {
 .worktab-tags-shell--google .google-tab:not(.activ-tab):hover {
   box-sizing: border-box;
   color: var(--el-text-color-primary) !important;
-  background-color: color-mix(in srgb, var(--el-text-color-primary) 8%, transparent) !important;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--el-color-primary) 10%, transparent),
+    color-mix(in srgb, var(--fa-brand-cyan) 9%, transparent)
+  ) !important;
   border-bottom: none !important;
-  border-radius: 6px 6px 0 0 !important;
+  border-radius: 10px 10px 0 0 !important;
 }
 
 .worktab-tags-shell--google .google-tab-route-icon:not(.text-theme) {
@@ -1010,7 +1032,7 @@ html:not(.dark) .worktab-tags-shell--google {
   width: 1px;
   height: 14px;
   pointer-events: none;
-  background: color-mix(in srgb, var(--el-border-color) 72%, transparent);
+  background: color-mix(in srgb, var(--fa-line-strong) 45%, transparent);
   transform: translateY(-50%);
   transition: opacity 0.15s ease;
 }

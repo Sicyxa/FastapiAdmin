@@ -9,19 +9,17 @@
         </div>
       </div>
       <div class="input-container">
-        <ElForm>
-          <ElInput
-            v-model="inputMessage"
-            type="textarea"
-            placeholder="向星宇智能助手发送消息..."
-            :disabled="disabled || sending"
-            :autosize="{ minRows: 1, maxRows: 6 }"
-            resize="none"
-            class="message-input"
-            @keydown.enter.exact.prevent="handleSend"
-            @keydown.shift.enter.exact="handleShiftEnter"
-          />
-        </ElForm>
+        <ElInput
+          v-model="inputMessage"
+          type="textarea"
+          placeholder="向星宇智能助手发送消息..."
+          :disabled="disabled || sending"
+          :autosize="{ minRows: 1, maxRows: 6 }"
+          resize="none"
+          class="message-input"
+          @keydown.enter.exact.prevent="handleSend"
+          @keydown.shift.enter.exact="handleShiftEnter"
+        />
         <div class="input-footer">
           <div class="input-footer-left">
             <ElDropdown
@@ -67,7 +65,9 @@
                     </ElDropdownItem>
                   </template>
                   <ElDropdownItem v-if="items.length === 0" disabled>
-                    <span class="dropdown-empty">暂未配置模型，请到"设置 → 配置中心"添加</span>
+                    <span class="dropdown-empty"
+                      >暂未配置模型，请到"星宇智能助手 → 设置 → 配置中心"添加</span
+                    >
                   </ElDropdownItem>
                 </ElDropdownMenu>
               </template>
@@ -344,13 +344,13 @@ defineExpose({
       gap: 12px;
       padding: 20px;
       background:
-        linear-gradient(180deg, rgb(255 255 255 / 96%), rgb(255 255 255 / 86%)) padding-box,
+        linear-gradient(180deg, rgb(255 255 255 / 97%), rgb(255 255 255 / 90%)) padding-box,
         var(--fa-gradient-border) border-box;
       border: 1px solid transparent;
-      border-radius: 16px;
+      border-radius: 18px;
       box-shadow:
-        0 16px 38px rgb(37 99 235 / 12%),
-        0 0 0 1px rgb(255 255 255 / 70%) inset;
+        0 14px 30px rgb(37 99 235 / 8%),
+        0 0 0 1px color-mix(in srgb, var(--el-color-primary) 8%, rgb(255 255 255 / 74%)) inset;
       transition:
         border-color 0.2s ease,
         box-shadow 0.2s ease,
@@ -358,33 +358,74 @@ defineExpose({
 
       &:hover {
         box-shadow:
-          0 18px 40px rgb(31 45 61 / 12%),
-          0 0 0 1px var(--el-color-primary-light-7) inset;
-        transform: translateY(-2px);
+          0 16px 34px rgb(31 45 61 / 9%),
+          0 0 0 1px color-mix(in srgb, var(--el-color-primary) 10%, rgb(255 255 255 / 78%)) inset;
+        transform: translateY(-1px);
       }
 
       &:focus-within {
         box-shadow:
-          0 18px 40px rgb(31 45 61 / 12%),
-          0 0 0 2px var(--el-color-primary-light-6) inset;
+          0 16px 34px rgb(31 45 61 / 9%),
+          0 0 0 1px color-mix(in srgb, var(--el-color-primary) 12%, rgb(255 255 255 / 80%)) inset;
       }
 
       .message-input {
         flex: 1;
         min-width: 0;
+        min-height: 84px;
 
-        :deep(.el-textarea__inner) {
+        :deep(.el-textarea__wrapper) {
+          display: flex;
+          align-items: stretch;
           padding: 0;
-          line-height: 1.6;
-          color: var(--el-text-color-primary);
-          resize: none;
-          background: transparent;
-          border: none;
-          box-shadow: none;
+          background: transparent !important;
+          box-shadow: none !important;
+          border: none !important;
         }
 
         :deep(.el-textarea) {
+          width: 100%;
           padding: 0;
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+        :deep(.el-textarea__inner) {
+          min-height: 84px !important;
+          padding: 2px 0 0 !important;
+          font-size: 15px;
+          line-height: 1.6;
+          color: var(--el-text-color-primary);
+          resize: none;
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          outline: none !important;
+          appearance: none;
+          -webkit-appearance: none;
+        }
+
+        :deep(textarea) {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          outline: none !important;
+          appearance: none;
+          -webkit-appearance: none;
+        }
+
+        :deep(.el-textarea__inner::placeholder) {
+          color: color-mix(in srgb, var(--el-text-color-secondary) 88%, white);
+        }
+
+        :deep(.el-textarea:hover .el-textarea__inner),
+        :deep(.el-textarea__inner:hover),
+        :deep(.el-textarea__inner:focus),
+        :deep(.el-textarea__inner:focus-visible) {
+          border: none !important;
+          box-shadow: none !important;
+          outline: none !important;
         }
       }
 
@@ -412,7 +453,7 @@ defineExpose({
           background:
             linear-gradient(var(--el-fill-color-blank), var(--el-fill-color-blank)) padding-box,
             var(--fa-gradient-border) border-box;
-          border: 1px solid transparent;
+          border: 1px solid color-mix(in srgb, var(--fa-line-strong) 35%, transparent);
           border-radius: 6px;
           transition: all 0.2s;
 

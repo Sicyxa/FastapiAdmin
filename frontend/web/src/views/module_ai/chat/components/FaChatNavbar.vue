@@ -57,9 +57,7 @@ const toggleSidebar = () => emit("toggle-sidebar");
   justify-content: space-between;
   padding: 10px 16px;
   background:
-    linear-gradient(90deg, rgb(255 255 255 / 68%), rgb(255 255 255 / 46%)),
-    var(--fa-surface-tint);
-  border-bottom: 1px solid var(--fa-accent-border);
+    linear-gradient(90deg, rgb(255 255 255 / 68%), rgb(255 255 255 / 46%)), var(--fa-surface-tint);
 
   .navbar-left {
     display: flex;
@@ -104,7 +102,7 @@ const toggleSidebar = () => emit("toggle-sidebar");
       linear-gradient(var(--fa-surface-elevated), var(--fa-surface-elevated)) padding-box,
       var(--fa-gradient-border) border-box;
     border-color: transparent;
-    box-shadow: 0 8px 18px rgb(37 99 235 / 12%);
+    box-shadow: 0 6px 14px rgb(37 99 235 / 10%);
   }
 
   &:focus-visible {

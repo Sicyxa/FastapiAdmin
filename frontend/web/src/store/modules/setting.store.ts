@@ -27,6 +27,9 @@ import type { Ref } from "vue";
 export const useSettingsStore = defineStore(
   "settingStore",
   () => {
+    const LEGACY_BLUE_THEME = "#2563EB";
+    const LEGACY_MAGENTA_THEME = "#C61B67";
+
     // 菜单
     const menuType = ref(SETTING_DEFAULT_CONFIG.menuType);
     const menuOpenWidth = ref(SETTING_DEFAULT_CONFIG.menuOpenWidth);
@@ -124,6 +127,16 @@ export const useSettingsStore = defineStore(
     );
     const themeColor = useStorage<string>(SETTINGS_KEYS.THEME_COLOR, defaultSettings.themeColor);
     const theme = useStorage<ThemeMode>(SETTINGS_KEYS.THEME, defaultSettings.theme);
+
+    if (
+      themeColor.value === LEGACY_BLUE_THEME ||
+      themeColor.value === LEGACY_MAGENTA_THEME ||
+      !AppConfig.systemMainColor.includes(themeColor.value)
+    ) {
+      themeColor.value = AppConfig.systemMainColor[0]!;
+    }
+
+    systemThemeColor.value = themeColor.value;
 
     // 系统设置 - 持久化
     const grayMode = useStorage<boolean>(SETTINGS_KEYS.GRAY_MODE, defaultSettings.grayMode);

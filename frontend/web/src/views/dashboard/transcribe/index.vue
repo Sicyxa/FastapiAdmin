@@ -56,16 +56,6 @@
                 <ElOption label="英文" value="en" />
               </ElSelect>
             </ElFormItem>
-            <ElFormItem label="输出格式">
-              <ElCheckboxGroup v-model="form.outputs">
-                <ElCheckbox label="文字稿" value="transcript" />
-                <ElCheckbox label="摘要" value="summary" />
-                <ElCheckbox label="时间轴" value="timeline" />
-              </ElCheckboxGroup>
-            </ElFormItem>
-            <ElFormItem label="说话人分离">
-              <ElSwitch v-model="form.speakerDiarization" />
-            </ElFormItem>
           </ElForm>
 
           <ElButton type="primary" class="w-full" @click="createTask">
@@ -177,7 +167,7 @@ onMounted(() => {
 .document-header {
   display: flex;
   gap: 16px;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
 
   h1 {
@@ -188,7 +178,7 @@ onMounted(() => {
   }
 
   p {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     font-size: 14px;
     color: var(--el-text-color-secondary);
   }
@@ -196,14 +186,23 @@ onMounted(() => {
 
 .document-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.6fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.task-card {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border-radius: 8px;
 }
 
 .upload-card,
-.settings-card,
-.task-card {
-  padding: 20px;
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
   border-radius: 8px;
 }
 
@@ -213,7 +212,7 @@ onMounted(() => {
   gap: 14px;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 
   h2 {
     margin: 0;
@@ -235,31 +234,69 @@ onMounted(() => {
   }
 }
 
+.upload-card,
+.settings-card {
+  .card-title {
+    margin-bottom: 12px;
+  }
+}
+
 .transcription-upload {
+  display: flex;
+
   :deep(.el-upload) {
     width: 100%;
+    display: flex;
   }
 
   :deep(.el-upload-dragger) {
-    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 104px;
+    padding: 14px;
+    border-radius: 12px;
   }
 }
 
 .upload-icon {
-  margin-bottom: 12px;
-  font-size: 42px;
+  margin-bottom: 8px;
+  font-size: 32px;
   color: var(--el-color-primary);
 }
 
 .upload-text {
-  font-size: 15px;
+  font-size: 13px;
   color: var(--el-text-color-primary);
 }
 
 .upload-tip {
-  margin-top: 10px;
+  margin-top: 6px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
+}
+
+.settings-card {
+  :deep(.el-form) {
+    flex: 1;
+  }
+
+  :deep(.el-form-item__label) {
+    margin-bottom: 4px;
+  }
+
+  :deep(.el-form-item) {
+    margin-bottom: 10px;
+  }
+
+  :deep(.el-checkbox-group) {
+    gap: 14px;
+  }
+
+  > .el-button {
+    min-height: 42px;
+    margin-top: auto;
+  }
 }
 
 .document-table {
@@ -273,7 +310,8 @@ onMounted(() => {
 }
 
 @media screen and (width <= 640px) {
-  .document-header {
+  .document-header,
+  .section-header {
     flex-direction: column;
   }
 }

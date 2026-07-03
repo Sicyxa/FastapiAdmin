@@ -15,7 +15,8 @@
   background: linear-gradient(
     90deg,
     var(--theme-color),
-    var(--fa-brand-green),
+    var(--fa-brand-blue),
+    var(--fa-brand-rose),
     var(--fa-brand-amber)
   );
 }
@@ -142,7 +143,7 @@
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box !important;
-  border: 1px solid transparent !important;
+  border: var(--fa-shell-border-width) solid transparent !important;
   box-shadow: var(--fa-shadow-card);
 }
 
@@ -150,7 +151,7 @@
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box;
-  border: 1px solid transparent !important;
+  border: var(--fa-shell-border-width) solid transparent !important;
   border-radius: calc(var(--custom-radius) + #{$radius-diff}) !important;
   box-shadow: #{$shadow} !important;
 
@@ -168,7 +169,7 @@
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box;
-  border: 1px solid transparent;
+  border: var(--fa-shell-border-width) solid transparent;
   box-shadow: var(--fa-shadow-card);
   transition:
     border-color 0.2s ease,
@@ -180,6 +181,7 @@
 .fa-card-sm:hover,
 .fa-card-xs:hover {
   box-shadow: var(--fa-shadow-card-hover);
+  transform: translateY(-2px);
 }
 
 .fa-card {
@@ -198,7 +200,7 @@
 [data-box-mode="border-mode"] {
   .page-content,
   .fa-table-card {
-    border: 1px solid var(--fa-card-border) !important;
+    border: var(--fa-shell-border-width) solid var(--fa-card-border) !important;
   }
 
   .fa-card {
@@ -218,36 +220,24 @@
 [data-box-mode="shadow-mode"] {
   .page-content,
   .fa-table-card {
-    border: 1px solid transparent !important;
+    border: var(--fa-shell-border-width) solid transparent !important;
     box-shadow: var(--fa-shadow-card) !important;
   }
 
   .layout-sidebar {
-    border-right: 1px solid var(--fa-accent-border) !important;
+    border-right: var(--fa-shell-border-width) solid var(--fa-line-strong) !important;
   }
 
   .fa-card {
-    @include fa-card-base(
-      var(--fa-accent-border),
-      var(--fa-shadow-card),
-      4px
-    );
+    @include fa-card-base(var(--fa-accent-border), var(--fa-shadow-card), 4px);
   }
 
   .fa-card-sm {
-    @include fa-card-base(
-      var(--fa-accent-border),
-      var(--fa-shadow-card),
-      2px
-    );
+    @include fa-card-base(var(--fa-accent-border), var(--fa-shadow-card), 2px);
   }
 
   .fa-card-xs {
-    @include fa-card-base(
-      var(--fa-accent-border),
-      var(--fa-shadow-card),
-      -4px
-    );
+    @include fa-card-base(var(--fa-accent-border), var(--fa-shadow-card), -4px);
   }
 }
 
@@ -279,7 +269,7 @@
   background:
     linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color)) padding-box,
     var(--fa-gradient-border) border-box;
-  border: 1px solid transparent !important;
+  border: var(--fa-shell-border-width) solid transparent !important;
   border-radius: calc(var(--custom-radius) / 2 + 2px) !important;
   box-shadow: var(--fa-shadow-card);
 

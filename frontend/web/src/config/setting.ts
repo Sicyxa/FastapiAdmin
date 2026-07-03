@@ -65,7 +65,7 @@ export const SETTING_DEFAULT_CONFIG = {
   /** 语言 */
   language: LanguageEnum.ZH_CN,
   /** 主题颜色 */
-  themeColor: "#2563EB",
+  themeColor: "#4F6BFF",
   /** 是否显示水印 */
   showWatermark: false,
   /** 水印内容 */
@@ -85,7 +85,7 @@ export const SETTING_DEFAULT_CONFIG = {
   /** 菜单类型 */
   menuType: MenuTypeEnum.LEFT,
   /** 菜单展开宽度 */
-  menuOpenWidth: 230,
+  menuOpenWidth: 268,
   /** 菜单是否展开 */
   menuOpen: true,
   /** 双菜单是否显示文本 */
@@ -135,7 +135,7 @@ export const SETTING_DEFAULT_CONFIG = {
   /** 标签页样式 */
   tabStyle: "tab-google",
   /** 自定义圆角 */
-  customRadius: "0.75",
+  customRadius: "1",
   /** 容器宽度 */
   containerWidth: ContainerWidthEnum.FULL,
   /** 节日日期 */

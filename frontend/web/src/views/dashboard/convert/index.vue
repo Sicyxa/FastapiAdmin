@@ -7,10 +7,6 @@
           <h1>AI文档转换</h1>
           <p>将 PDF、Word、图片或 Markdown 转换为结构化文档、PPT 大纲与知识库素材。</p>
         </div>
-        <ElButton type="primary">
-          <FaSvgIcon icon="ri:add-line" />
-          新建转换
-        </ElButton>
       </section>
 
       <section class="conversion-layout">
@@ -18,95 +14,79 @@
           <div class="card-title">
             <div>
               <h2>转换任务</h2>
-              <p>选择源文件与目标格式，AI 会自动清理版式并保留语义结构。</p>
+              <p>选择源文件后，AI 会自动清理版式并输出目标格式内容。</p>
             </div>
             <FaSvgIcon icon="ri:file-transfer-line" />
           </div>
 
-          <ElUpload
-            v-model:file-list="fileList"
-            class="document-upload"
-            drag
-            action="#"
-            :auto-upload="false"
-            :limit="5"
+          <input
+            ref="fileInputRef"
+            class="hidden-file-input"
+            type="file"
+            accept=".pdf,.doc,.docx,.xlsx,.ppt,.pptx,.md,.markdown,.csv,.png,.jpg,.jpeg,.txt"
+            @change="handleFileChange"
+          />
+
+          <div
+            v-if="!selectedFile"
+            class="upload-stage"
+            @click="openFilePicker"
+            @dragover.prevent
+            @drop.prevent="handleFileDrop"
           >
-            <FaSvgIcon icon="ri:file-upload-line" class="upload-icon" />
-            <div class="upload-text">选择或拖入需要转换的文档</div>
-            <template #tip>
-              <div class="upload-tip">支持 pdf、docx、xlsx、pptx、md、png、jpg。</div>
-            </template>
-          </ElUpload>
-
-          <div class="format-grid">
-            <button
-              v-for="item in formats"
-              :key="item.value"
-              type="button"
-              class="format-item"
-              :class="{ 'is-active': form.target === item.value }"
-              @click="form.target = item.value"
-            >
-              <FaSvgIcon :icon="item.icon" />
-              <span>{{ item.label }}</span>
-            </button>
-          </div>
-
-          <ElForm label-position="top" class="conversion-form">
-            <ElFormItem label="处理模式">
-              <ElRadioGroup v-model="form.mode">
-                <ElRadioButton label="保留版式" value="layout" />
-                <ElRadioButton label="重组内容" value="semantic" />
-                <ElRadioButton label="提取要点" value="summary" />
-              </ElRadioGroup>
-            </ElFormItem>
-            <ElFormItem label="附加能力">
-              <ElCheckboxGroup v-model="form.options">
-                <ElCheckbox label="OCR识别" value="ocr" />
-                <ElCheckbox label="表格解析" value="table" />
-                <ElCheckbox label="图片说明" value="imageCaption" />
-              </ElCheckboxGroup>
-            </ElFormItem>
-          </ElForm>
-
-          <ElButton type="primary" class="w-full" @click="createConversion">
-            <FaSvgIcon icon="ri:magic-line" />
-            开始转换
-          </ElButton>
-        </div>
-
-        <aside class="fa-card preview-card">
-          <div class="card-title">
-            <div>
-              <h2>输出预览</h2>
-              <p>转换后将生成可编辑文件与结构化片段。</p>
+            <div class="upload-stage__icon">
+              <FaSvgIcon icon="ri:file-upload-line" />
             </div>
-            <FaSvgIcon icon="ri:article-line" />
+            <div class="upload-stage__title">选择或拖入需要转换的文档</div>
+            <p class="upload-stage__desc">支持 pdf、docx、xlsx、pptx、md、png、jpg、txt。</p>
           </div>
 
-          <div class="preview-paper">
-            <div class="paper-line is-title"></div>
-            <div class="paper-line"></div>
-            <div class="paper-line short"></div>
-            <div class="paper-block">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-            <div class="paper-line"></div>
-            <div class="paper-line medium"></div>
-          </div>
+          <div v-else class="conversion-workbench">
+            <div class="file-flow">
+              <div class="selected-file-card">
+                <div class="selected-file-card__meta">
+                  <FaSvgIcon icon="ri:file-text-line" />
+                  <span>{{ selectedFile.name }}</span>
+                </div>
+                <button type="button" class="file-action-button" @click="clearSelectedFile">
+                  <FaSvgIcon icon="ri:delete-bin-line" />
+                </button>
+              </div>
 
-          <div class="summary-list">
-            <div v-for="item in summaries" :key="item.title" class="summary-item">
-              <FaSvgIcon :icon="item.icon" />
-              <div>
-                <strong>{{ item.title }}</strong>
-                <p>{{ item.description }}</p>
+              <div class="flow-arrow">
+                <FaSvgIcon icon="ri:arrow-right-line" />
+              </div>
+
+              <div class="target-badge">
+                {{ form.target }}
               </div>
             </div>
+
+            <div class="target-grid">
+              <button
+                v-for="item in formats"
+                :key="item"
+                type="button"
+                class="target-chip"
+                :class="{ 'is-active': form.target === item }"
+                @click="form.target = item"
+              >
+                {{ item }}
+              </button>
+            </div>
+
+            <div class="action-row">
+              <ElButton class="action-row__secondary" @click="openFilePicker">
+                <FaSvgIcon icon="ri:refresh-line" />
+                更换文件
+              </ElButton>
+              <ElButton type="primary" class="action-row__primary" @click="createConversion">
+                转换
+                <FaSvgIcon icon="ri:arrow-right-line" />
+              </ElButton>
+            </div>
           </div>
-        </aside>
+        </div>
       </section>
 
       <section class="fa-card history-card">
@@ -115,13 +95,16 @@
             <h2>转换记录</h2>
             <p>最近创建的文档转换任务。</p>
           </div>
-          <ElButton text type="primary">
-            查看全部
-            <FaSvgIcon icon="ri:arrow-right-s-line" />
-          </ElButton>
+          <ElInput
+            v-model.trim="searchKeyword"
+            class="history-search"
+            clearable
+            :prefix-icon="Search"
+            placeholder="搜索文档名称"
+          />
         </div>
 
-        <ElTable :data="records" class="conversion-table">
+        <ElTable :data="paginatedRecords" class="conversion-table">
           <ElTableColumn prop="name" label="文档名称" min-width="180" />
           <ElTableColumn prop="target" label="目标格式" width="130" />
           <ElTableColumn label="状态" width="120">
@@ -137,58 +120,68 @@
             </template>
           </ElTableColumn>
         </ElTable>
+
+        <div class="table-pagination">
+          <div class="table-pagination__summary">
+            共 {{ filteredRecords.length }} 条数据，当前第 {{ displayCurrentPage }} /
+            {{ totalPages }} 页
+          </div>
+          <ElPagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 50]"
+            :total="filteredRecords.length"
+            background
+            layout="sizes, prev, pager, next"
+          />
+        </div>
       </section>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
-import type { UploadUserFile } from "element-plus";
+import { Search } from "@element-plus/icons-vue";
 import FaDashboardSkeleton from "@/components/skeleton/fa-dashboard-skeleton.vue";
 
 defineOptions({ name: "DashboardAiDocumentConversion" });
 
-interface FormatItem {
-  label: string;
-  value: string;
-  icon: string;
-}
-
 const loading = ref(true);
-const fileList = ref<UploadUserFile[]>([]);
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const searchKeyword = ref("");
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 const form = ref({
-  target: "docx",
-  mode: "semantic",
-  options: ["ocr", "table"],
+  target: "PDF",
 });
 
-const formats: FormatItem[] = [
-  { label: "Word", value: "docx", icon: "ri:file-word-line" },
-  { label: "PPT大纲", value: "ppt", icon: "ri:slideshow-3-line" },
-  { label: "Markdown", value: "markdown", icon: "ri:markdown-line" },
-  { label: "知识库片段", value: "knowledge", icon: "ri:database-2-line" },
+const formats = [
+  "DOCM",
+  "DOCX",
+  "DOCXF",
+  "DOTM",
+  "DOTX",
+  "EPUB",
+  "FB2",
+  "HTML",
+  "HWP",
+  "HWPX",
+  "ODT",
+  "OTT",
+  "PAGES",
+  "PDF",
+  "PDFA",
+  "RTF",
+  "TXT",
+  "PNG",
+  "JPG",
+  "BMP",
+  "GIF",
 ];
-
-const summaries = [
-  {
-    title: "结构化段落",
-    description: "自动识别标题、正文、列表与引用。",
-    icon: "ri:list-check-2",
-  },
-  {
-    title: "表格与图片解析",
-    description: "将复杂版面转换为可编辑内容。",
-    icon: "ri:table-2",
-  },
-  {
-    title: "智能摘要",
-    description: "同步生成要点、关键词与章节摘要。",
-    icon: "ri:mind-map",
-  },
-];
+const selectedFile = ref<File | null>(null);
 
 const records = [
   {
@@ -212,14 +205,97 @@ const records = [
     statusType: "info",
     updatedAt: "2026-06-29 16:44",
   },
+  {
+    name: "扫描合同.jpg",
+    target: "知识库片段",
+    status: "待处理",
+    statusType: "info",
+    updatedAt: "2026-06-29 16:44",
+  },
+  {
+    name: "扫描合同.jpg",
+    target: "知识库片段",
+    status: "待处理",
+    statusType: "info",
+    updatedAt: "2026-06-29 16:44",
+  },
+  {
+    name: "扫描合同.jpg",
+    target: "知识库片段",
+    status: "待处理",
+    statusType: "info",
+    updatedAt: "2026-06-29 16:44",
+  },
 ];
 
+const filteredRecords = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase();
+  if (!keyword) return records;
+  return records.filter((item) => item.name.toLowerCase().includes(keyword));
+});
+
+const paginatedRecords = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return filteredRecords.value.slice(start, start + pageSize.value);
+});
+
+const totalPages = computed(() => {
+  if (filteredRecords.value.length === 0) return 0;
+  return Math.ceil(filteredRecords.value.length / pageSize.value);
+});
+
+const displayCurrentPage = computed(() => {
+  if (filteredRecords.value.length === 0) return 0;
+  return Math.min(currentPage.value, totalPages.value);
+});
+
+watch([searchKeyword, pageSize], () => {
+  currentPage.value = 1;
+});
+
+watch([filteredRecords, totalPages], () => {
+  if (totalPages.value === 0) {
+    currentPage.value = 1;
+    return;
+  }
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value;
+  }
+});
+
+function openFilePicker(): void {
+  fileInputRef.value?.click();
+}
+
+function applySelectedFile(file: File | null): void {
+  selectedFile.value = file;
+}
+
+function handleFileChange(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0] ?? null;
+  applySelectedFile(file);
+}
+
+function handleFileDrop(event: DragEvent): void {
+  const file = event.dataTransfer?.files?.[0] ?? null;
+  if (!file) return;
+  applySelectedFile(file);
+}
+
+function clearSelectedFile(): void {
+  selectedFile.value = null;
+  if (fileInputRef.value) {
+    fileInputRef.value.value = "";
+  }
+}
+
 function createConversion(): void {
-  if (fileList.value.length === 0) {
+  if (!selectedFile.value) {
     ElMessage.warning("请先选择需要转换的文档");
     return;
   }
-  ElMessage.success("转换任务已创建");
+  ElMessage.success(`已创建 ${selectedFile.value.name} -> ${form.value.target} 的转换任务`);
 }
 
 onMounted(() => {
@@ -249,22 +325,25 @@ onMounted(() => {
   }
 
   p {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     font-size: 14px;
     color: var(--el-text-color-secondary);
   }
 }
 
 .conversion-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 20px;
+  display: block;
+}
+
+.hidden-file-input {
+  display: none;
 }
 
 .converter-card,
-.preview-card,
 .history-card {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
   border-radius: 8px;
 }
 
@@ -274,7 +353,7 @@ onMounted(() => {
   gap: 14px;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 
   h2 {
     margin: 0;
@@ -296,150 +375,266 @@ onMounted(() => {
   }
 }
 
-.document-upload {
-  :deep(.el-upload) {
-    width: 100%;
-  }
+.history-search {
+  flex: 0 0 240px;
+  max-width: 100%;
+}
 
-  :deep(.el-upload-dragger) {
-    border-radius: 8px;
+.upload-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  min-height: 176px;
+  padding: 22px;
+  text-align: center;
+  cursor: pointer;
+  background:
+    linear-gradient(135deg, rgb(46 109 240 / 6%), rgb(18 166 210 / 3%)), var(--el-bg-color);
+  border: 1px dashed var(--el-color-primary-light-5);
+  border-radius: 14px;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--el-color-primary);
+    box-shadow: 0 12px 28px rgb(46 109 240 / 10%);
+    transform: translateY(-1px);
   }
 }
 
-.upload-icon {
-  margin-bottom: 12px;
-  font-size: 42px;
+.upload-stage__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  font-size: 30px;
   color: var(--el-color-primary);
+  background: linear-gradient(135deg, rgb(46 109 240 / 14%), rgb(18 166 210 / 10%));
+  border-radius: 18px;
 }
 
-.upload-text {
-  font-size: 15px;
+.upload-stage__title {
+  font-size: 16px;
+  font-weight: 650;
   color: var(--el-text-color-primary);
 }
 
-.upload-tip {
-  margin-top: 10px;
-  font-size: 12px;
+.upload-stage__desc {
+  margin: 0;
+  font-size: 13px;
   color: var(--el-text-color-secondary);
 }
 
-.format-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 18px 0;
+.conversion-workbench {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.format-item {
+.file-flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.selected-file-card {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--el-bg-color);
+  border: 1px dashed var(--el-border-color);
+  border-radius: 12px;
+}
+
+.selected-file-card__meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  color: var(--el-text-color-primary);
+
+  .fa-svg-icon {
+    flex: 0 0 auto;
+    font-size: 20px;
+    color: var(--el-text-color-regular);
+  }
+
+  span {
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.file-action-button {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  color: var(--el-text-color-regular);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--el-text-color-secondary);
   cursor: pointer;
-  background: var(--el-fill-color-lighter);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 
   .fa-svg-icon {
     font-size: 18px;
   }
 
-  &.is-active {
+  &:hover {
+    color: var(--el-color-danger);
+    background: var(--el-color-danger-light-9);
+  }
+}
+
+.flow-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--el-color-primary-dark-2);
+
+  .fa-svg-icon {
+    font-size: 28px;
+  }
+}
+
+.target-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 98px;
+  min-height: 48px;
+  padding: 0 18px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, rgb(255 255 255 / 96%), rgb(239 245 255 / 98%));
+  border: 1px solid var(--el-border-color);
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgb(32 84 187 / 8%);
+}
+
+.target-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.target-chip {
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-regular);
+  cursor: pointer;
+  background: var(--el-fill-color-light);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+
+  &:hover {
     color: var(--el-color-primary);
     background: var(--el-color-primary-light-9);
     border-color: var(--el-color-primary-light-5);
   }
-}
 
-.preview-paper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px;
-  background: var(--el-fill-color-lighter);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
-}
-
-.paper-line {
-  width: 100%;
-  height: 10px;
-  background: var(--el-border-color);
-  border-radius: 999px;
-
-  &.is-title {
-    width: 58%;
-    height: 16px;
-    background: var(--el-color-primary-light-5);
-  }
-
-  &.short {
-    width: 46%;
-  }
-
-  &.medium {
-    width: 72%;
+  &.is-active {
+    color: white;
+    background: linear-gradient(135deg, var(--el-color-primary), #ff7a3d);
+    border-color: transparent;
+    box-shadow: 0 10px 20px rgb(46 109 240 / 18%);
   }
 }
 
-.paper-block {
+.action-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-
-  span {
-    height: 48px;
-    background: var(--default-box-color);
-    border: 1px solid var(--el-border-color-lighter);
-    border-radius: 6px;
-  }
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
-.summary-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 18px;
+.action-row__secondary,
+.action-row__primary {
+  min-height: 46px;
+  font-size: 15px;
+  font-weight: 650;
+  border-radius: 12px;
 }
 
-.summary-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-
-  .fa-svg-icon {
-    flex: 0 0 auto;
-    margin-top: 2px;
-    font-size: 20px;
-    color: var(--el-color-primary);
-  }
-
-  strong {
-    font-size: 14px;
-    color: var(--el-text-color-primary);
-  }
-
-  p {
-    margin: 4px 0 0;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--el-text-color-secondary);
-  }
+.action-row__secondary {
+  color: var(--el-text-color-primary);
+  background: var(--el-bg-color);
+  border-color: var(--el-border-color);
 }
 
-.conversion-form {
-  margin-top: 2px;
+.action-row__primary {
+  border: 0;
+  background: linear-gradient(135deg, var(--el-color-primary), #ff7a3d);
+  box-shadow: 0 14px 28px rgb(46 109 240 / 18%);
+}
+
+.action-row :deep(.el-button) {
+  margin: 0;
 }
 
 .conversion-table {
   width: 100%;
 }
 
-@media screen and (width <= 1100px) {
-  .conversion-layout {
+.table-pagination {
+  display: flex;
+  flex-shrink: 0;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.table-pagination__summary {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
+
+.table-pagination :deep(.el-pagination) {
+  margin-left: auto;
+}
+
+.table-pagination :deep(.el-pagination__sizes) {
+  margin-right: 8px;
+}
+
+@media screen and (width <= 960px) {
+  .file-flow {
     grid-template-columns: 1fr;
+  }
+
+  .flow-arrow {
+    justify-self: center;
+
+    .fa-svg-icon {
+      transform: rotate(90deg);
+    }
   }
 }
 
@@ -448,8 +643,29 @@ onMounted(() => {
     flex-direction: column;
   }
 
-  .format-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .action-row {
+    grid-template-columns: 1fr;
+  }
+
+  .target-badge {
+    justify-self: flex-start;
+  }
+
+  .section-header {
+    flex-direction: column;
+  }
+
+  .history-search {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .table-pagination {
+    align-items: flex-start;
+  }
+
+  .table-pagination :deep(.el-pagination) {
+    margin-left: 0;
   }
 }
 </style>

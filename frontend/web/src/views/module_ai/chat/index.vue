@@ -30,11 +30,7 @@
           />
         </ElMain>
         <ElFooter class="chat-footer">
-          <FaChatInput
-            :sending="sending"
-            @send="handleSendMessage"
-            @stop="handleStopMessage"
-          />
+          <FaChatInput :sending="sending" @send="handleSendMessage" @stop="handleStopMessage" />
         </ElFooter>
       </ElContainer>
     </ElContainer>
@@ -85,7 +81,6 @@ let isUnmounting = false;
 let connectionPromptVisible = false;
 let pendingPromptSending = false;
 const WS_URL = import.meta.env.VITE_APP_WS_ENDPOINT;
-
 // ============ WebSocket 操作 ============
 const connectWebSocket = () => {
   if (ws?.readyState === WebSocket.OPEN) return;
@@ -370,24 +365,54 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .main-chat {
+  --chat-shell-outline: color-mix(in srgb, var(--el-color-primary) 13%, rgb(255 255 255 / 80%));
+  --chat-divider: color-mix(in srgb, var(--el-color-primary) 16%, transparent);
+  --chat-divider-soft: color-mix(in srgb, var(--fa-brand-cyan) 9%, transparent);
+
+  flex: 1;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 86%), rgb(255 255 255 / 94%)) padding-box,
+    linear-gradient(180deg, rgb(255 255 255 / 90%), rgb(255 255 255 / 96%)) padding-box,
     var(--fa-gradient-border) border-box;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow:
-    0 20px 46px rgb(37 99 235 / 11%),
-    0 0 0 1px rgb(255 255 255 / 55%) inset;
+    0 16px 36px rgb(37 99 235 / 8%),
+    0 0 0 1px var(--chat-shell-outline) inset,
+    0 1px 0 rgb(255 255 255 / 72%) inset;
 
   /* 与右侧同一表面色；与内容区的分界交给 Sidebar 的竖线即可 */
   .sidebar-container {
+    position: relative;
     width: 200px;
     background:
-      linear-gradient(180deg, rgb(255 255 255 / 72%), rgb(255 255 255 / 46%)),
-      linear-gradient(180deg, var(--el-color-primary-light-9), rgb(240 253 244 / 72%));
+      linear-gradient(180deg, rgb(255 255 255 / 74%), rgb(255 255 255 / 56%)),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--el-color-primary-light-9) 84%, white),
+        color-mix(in srgb, var(--fa-brand-cyan) 7%, transparent)
+      );
     transition: width 0.3s ease;
+
+    &::after {
+      position: absolute;
+      top: 14px;
+      right: 0;
+      bottom: 14px;
+      width: 1px;
+      content: "";
+      background: linear-gradient(
+        180deg,
+        transparent,
+        var(--chat-divider),
+        var(--chat-divider-soft),
+        transparent
+      );
+      opacity: 0.86;
+      pointer-events: none;
+    }
 
     &.collapsed {
       width: 64px;
@@ -402,30 +427,74 @@ onUnmounted(() => {
   }
 
   .chat-header {
+    position: relative;
     height: auto;
     padding: 0;
     background:
-      linear-gradient(90deg, rgb(255 255 255 / 76%), rgb(255 255 255 / 58%)),
-      linear-gradient(90deg, var(--el-color-primary-light-9), rgb(240 253 244 / 72%));
-    border-bottom: 1px solid var(--fa-accent-border);
+      linear-gradient(90deg, rgb(255 255 255 / 80%), rgb(255 255 255 / 66%)),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--el-color-primary-light-9) 84%, white),
+        color-mix(in srgb, var(--fa-brand-cyan) 6%, transparent)
+      );
+
+    &::after {
+      position: absolute;
+      right: 18px;
+      bottom: 0;
+      left: 18px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--chat-divider),
+        var(--chat-divider-soft),
+        transparent
+      );
+      opacity: 0.88;
+      pointer-events: none;
+    }
   }
 
   .chat-main {
     flex: 1;
     overflow: hidden;
     background:
-      linear-gradient(180deg, rgb(255 255 255 / 54%), rgb(255 255 255 / 78%)),
+      linear-gradient(180deg, rgb(255 255 255 / 60%), rgb(255 255 255 / 82%)),
       var(--fa-surface-tint);
   }
 
   .chat-footer {
+    position: relative;
     height: auto;
     min-height: 80px;
     padding: 0;
     background:
-      linear-gradient(90deg, rgb(255 255 255 / 80%), rgb(255 255 255 / 64%)),
-      linear-gradient(90deg, var(--el-color-primary-light-9), rgb(255 247 237 / 70%));
-    border-top: 1px solid var(--fa-accent-border);
+      linear-gradient(90deg, rgb(255 255 255 / 84%), rgb(255 255 255 / 70%)),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--el-color-primary-light-9) 82%, white),
+        color-mix(in srgb, var(--fa-brand-cyan) 6%, transparent)
+      );
+
+    &::before {
+      position: absolute;
+      top: 0;
+      right: 18px;
+      left: 18px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--chat-divider),
+        var(--chat-divider-soft),
+        transparent
+      );
+      opacity: 0.88;
+      pointer-events: none;
+    }
   }
 }
 

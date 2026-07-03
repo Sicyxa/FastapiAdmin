@@ -30,7 +30,7 @@
       flex: 1;
       flex-direction: column;
       min-height: 0;
-      padding: 20px;
+      padding: 24px;
       background: var(--app-bg);
       overflow: auto;
 
@@ -45,15 +45,15 @@
           position: relative;
           box-sizing: border-box;
           min-height: 0;
-          padding: 20px;
+          padding: 26px;
           overflow: hidden auto;
           background:
             linear-gradient(180deg, var(--fa-surface-elevated), var(--default-box-color))
               padding-box,
             var(--fa-gradient-border) border-box;
-          border: 1px solid transparent;
+          border: var(--fa-shell-border-width) solid transparent;
           box-shadow: var(--fa-shadow-card);
-          border-radius: calc(var(--custom-radius) / 2 + 2px) !important;
+          border-radius: calc(var(--custom-radius) + 8px) !important;
         }
       }
     }
@@ -89,7 +89,7 @@
       overflow: hidden;
 
       #app-content {
-        padding: 12px;
+        padding: 14px;
 
         :deep(.layout-content) {
           width: calc(100% - 24px);

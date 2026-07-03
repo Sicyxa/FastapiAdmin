@@ -496,6 +496,14 @@ const openChat = (): void => {
   border-color: var(--el-color-primary) !important;
 }
 
+.search-bar-trigger {
+  background: linear-gradient(135deg, rgb(255 255 255 / 82%), rgb(241 246 255 / 92%));
+  border-width: var(--fa-shell-border-width) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 78%),
+    0 6px 18px rgb(79 107 255 / 8%);
+}
+
 .notice-button:hover :deep(.fa-svg-icon) {
   animation: shake 0.5s ease-in-out;
 }
@@ -511,21 +519,30 @@ const openChat = (): void => {
 
 .fa-header-shell {
   background:
-    linear-gradient(90deg, rgb(255 255 255 / 82%), rgb(255 255 255 / 68%)),
-    linear-gradient(90deg, var(--el-color-primary-light-9), rgb(240 253 244 / 72%)) !important;
-  border-bottom: 1px solid var(--fa-accent-border);
-  box-shadow: 0 8px 24px rgb(37 99 235 / 6%);
-  backdrop-filter: blur(14px);
+    linear-gradient(90deg, rgb(250 252 255 / 90%), rgb(241 246 255 / 80%)),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--el-color-primary-light-9) 88%, white),
+      color-mix(in srgb, var(--fa-brand-cyan) 14%, transparent),
+      color-mix(in srgb, var(--fa-brand-rose) 12%, transparent)
+    ) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--fa-line-strong) 60%, transparent);
+  box-shadow: 0 12px 28px rgb(79 107 255 / 10%);
+  backdrop-filter: blur(18px);
 
   :deep(.fa-icon-button) {
-    border: 1px solid transparent;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 94%), rgb(240 245 255 / 90%)) padding-box,
+      var(--fa-gradient-border) border-box;
+    border: var(--fa-shell-border-width) solid transparent;
+    box-shadow: 0 8px 18px rgb(79 107 255 / 10%);
   }
 }
 
 :global(html.dark) .fa-header-shell {
   background:
-    linear-gradient(90deg, rgb(17 24 39 / 88%), rgb(15 23 42 / 78%)),
-    linear-gradient(90deg, rgb(37 99 235 / 18%), rgb(5 150 105 / 12%)) !important;
+    linear-gradient(90deg, rgb(19 28 48 / 90%), rgb(16 23 40 / 82%)),
+    linear-gradient(90deg, rgb(79 107 255 / 20%), rgb(123 97 255 / 16%), rgb(78 161 255 / 10%)) !important;
 }
 
 /* iPad breakpoint adjustments */

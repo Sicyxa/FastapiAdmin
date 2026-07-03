@@ -4,7 +4,6 @@ import autoprefixer from "autoprefixer";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "url";
-import vueDevTools from "vite-plugin-vue-devtools";
 import viteCompression from "vite-plugin-compression";
 import Components from "unplugin-vue-components/vite";
 import AutoImport from "unplugin-auto-import/vite";
@@ -225,8 +224,6 @@ export default ({ mode }: { mode: string }) => {
         threshold: 10240, // 只有大小大于该值的资源会被处理 10240B = 10KB
         deleteOriginFile: false, // 压缩后是否删除原文件
       }),
-      /** 仅开发启用：避免生产包体积膨胀与运行期 DevTools 开销 */
-      ...(isProduction ? [] : [vueDevTools()]),
     ],
     optimizeDeps: {
       include: [
@@ -243,7 +240,6 @@ export default ({ mode }: { mode: string }) => {
         "vuedraggable",
         "vue-draggable-plus",
         "element-plus",
-        "@element-plus/icons-vue",
         "element-plus/es",
         "element-plus/es/locale/lang/en",
         "element-plus/es/locale/lang/zh-cn",
@@ -281,6 +277,9 @@ export default ({ mode }: { mode: string }) => {
         "pinia-plugin-persistedstate",
         ...elementPlusStyleIncludes(),
       ],
+      // Vite 7 预编译该包时，偶发 runtime-core/shared 初始化顺序异常，
+      // 会在 defineComponent 内触发 `isFunction is not a function`。
+      exclude: ["@element-plus/icons-vue"],
     },
     css: {
       preprocessorOptions: {

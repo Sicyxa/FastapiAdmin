@@ -337,17 +337,32 @@ defineExpose({
   flex-direction: column;
   height: 100%;
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 64%), rgb(255 255 255 / 42%)),
-    var(--fa-surface-tint);
-  border-right: 1px solid var(--fa-accent-border);
+    linear-gradient(180deg, rgb(255 255 255 / 64%), rgb(255 255 255 / 42%)), var(--fa-surface-tint);
   transition: width 0.3s ease;
 
   .sidebar-header {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 12px;
-    border-bottom: 1px solid var(--fa-accent-border);
+
+    &::after {
+      position: absolute;
+      right: 12px;
+      bottom: 0;
+      left: 12px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--el-color-primary) 18%, transparent),
+        color-mix(in srgb, var(--fa-brand-cyan) 10%, transparent),
+        transparent
+      );
+      pointer-events: none;
+    }
 
     .logo-section {
       display: flex;
@@ -409,16 +424,21 @@ defineExpose({
             linear-gradient(var(--el-bg-color-overlay), var(--el-bg-color-overlay)) padding-box,
             var(--fa-gradient-border) border-box;
           border: 1px solid transparent;
-          border-radius: 8px;
-          box-shadow: none;
+          border-radius: 10px;
+          box-shadow: 0 0 0 1px
+            color-mix(in srgb, var(--el-color-primary) 7%, rgb(255 255 255 / 72%)) inset;
           transition: all 0.2s ease;
 
           &:hover {
-            box-shadow: 0 0 0 1px var(--el-color-primary-light-6) inset;
+            box-shadow: 0 0 0 1px
+              color-mix(in srgb, var(--el-color-primary) 14%, rgb(255 255 255 / 72%)) inset;
           }
 
           &.is-focus {
-            box-shadow: 0 0 0 2px var(--el-color-primary-light-6) inset;
+            box-shadow:
+              0 0 0 1px color-mix(in srgb, var(--el-color-primary) 18%, rgb(255 255 255 / 76%))
+                inset,
+              0 0 0 4px color-mix(in srgb, var(--el-color-primary) 6%, transparent);
           }
         }
 
@@ -480,24 +500,23 @@ defineExpose({
               padding: 4px;
               margin-bottom: 6px;
               cursor: pointer;
-              border: 1px solid transparent;
               border-radius: 14px;
               transition: all 0.2s ease;
 
               &:hover {
                 background: rgb(255 255 255 / 72%);
-                border-color: var(--el-color-primary-light-7);
                 transform: translateX(2px);
               }
 
               &.active {
                 color: var(--el-color-primary);
-                background:
-                  linear-gradient(135deg, var(--el-color-primary-light-9), rgb(236 253 245 / 80%))
-                    padding-box,
-                  var(--fa-gradient-border) border-box;
-                border-color: transparent;
-                box-shadow: 0 8px 18px rgb(64 158 255 / 12%);
+                background: linear-gradient(
+                  90deg,
+                  color-mix(in srgb, var(--el-color-primary) 10%, transparent),
+                  color-mix(in srgb, var(--fa-brand-cyan) 8%, transparent),
+                  transparent 82%
+                );
+                box-shadow: none;
               }
 
               .session-icon {
@@ -560,9 +579,26 @@ defineExpose({
   }
 
   .sidebar-footer {
+    position: relative;
     padding: 12px;
     background: rgb(255 255 255 / 48%);
-    border-top: 1px solid var(--fa-accent-border);
+
+    &::before {
+      position: absolute;
+      top: 0;
+      right: 12px;
+      left: 12px;
+      height: 1px;
+      content: "";
+      background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--el-color-primary) 18%, transparent),
+        color-mix(in srgb, var(--fa-brand-cyan) 10%, transparent),
+        transparent
+      );
+      pointer-events: none;
+    }
 
     .user-info {
       display: flex;
@@ -609,8 +645,7 @@ defineExpose({
 
 :global(html.dark) .sidebar {
   background:
-    linear-gradient(180deg, rgb(17 24 39 / 86%), rgb(15 23 42 / 76%)),
-    var(--fa-surface-tint);
+    linear-gradient(180deg, rgb(17 24 39 / 86%), rgb(15 23 42 / 76%)), var(--fa-surface-tint);
 
   .sidebar-footer {
     background: rgb(15 23 42 / 62%);
