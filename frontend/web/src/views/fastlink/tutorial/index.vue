@@ -119,14 +119,6 @@
                               菜单管理
                             </ElLink>
                             ·
-                            <ElLink href="#page-dept" type="primary" underline="never">
-                              部门管理
-                            </ElLink>
-                            ·
-                            <ElLink href="#page-position" type="primary" underline="never">
-                              岗位管理
-                            </ElLink>
-                            ·
                             <ElLink href="#page-dict" type="primary" underline="never">
                               字典管理
                             </ElLink>
@@ -137,10 +129,6 @@
                             ·
                             <ElLink href="#page-notice" type="primary" underline="never">
                               通知公告
-                            </ElLink>
-                            ·
-                            <ElLink href="#page-tenant" type="primary" underline="never">
-                              租户管理
                             </ElLink>
                             ·
                             <ElLink href="#page-log" type="primary" underline="never">
@@ -487,7 +475,7 @@
                                   </td>
                                 </tr>
                                 <tr>
-                                  <td>row.dept?.name</td>
+                                  <td>用户状态 / 性别标签 / 时间信息</td>
                                 </tr>
                                 <tr>
                                   <td>
@@ -557,12 +545,12 @@
                             <li>
                               <strong>详情 Drawer</strong>
                               —
-                              编号、头像、账号、用户名、性别(标签)、部门、角色(逗号拼接)、岗位(逗号拼接)、邮箱、手机号、是否超管(标签)、状态(标签)、上次登录时间、创建人、更新人、创建时间、更新时间、描述
+                              编号、头像、账号、用户名、性别(标签)、角色(逗号拼接)、邮箱、手机号、状态(标签)、上次登录时间、创建人、更新人、创建时间、更新时间、描述
                             </li>
                             <li>
                               <strong>新增/编辑 Drawer</strong>
                               (450px) —
-                              账号(username,编辑时禁用)、用户名(name)、性别、手机号(正则校验)、邮箱(正则校验)、部门(ElTreeSelect)、角色(多选)、岗位(多选)、密码(仅新增)、是否超管(Switch)、状态(Radio)、描述(textarea)
+                              账号(username,编辑时禁用)、用户名(name)、性别、手机号(正则校验)、邮箱(正则校验)、角色(多选)、密码(仅新增)、状态(Radio)、描述(textarea)
                             </li>
                             <li>
                               <strong>导入弹窗</strong>
@@ -582,7 +570,6 @@
                         <div class="section">
                           <ElDivider content-position="left" class="my-3!">✨ 特殊功能</ElDivider>
                           <ul class="feature-list">
-                            <li>左侧部门树联动筛选(点击树节点过滤列表)</li>
                             <li>批量删除(确认对话框)</li>
                             <li>批量启用/停用</li>
                             <li>若删除自己则清除登录信息登出</li>
@@ -1071,12 +1058,9 @@ const MANUAL_TOC: ManualModule[] = [
       { anchor: "page-user", title: "用户管理" },
       { anchor: "page-role", title: "角色管理" },
       { anchor: "page-menu", title: "菜单管理" },
-      { anchor: "page-dept", title: "部门管理" },
-      { anchor: "page-position", title: "岗位管理" },
       { anchor: "page-dict", title: "字典管理" },
       { anchor: "page-param", title: "参数配置" },
       { anchor: "page-notice", title: "通知公告" },
-      { anchor: "page-tenant", title: "租户管理" },
       { anchor: "page-log", title: "操作日志" },
       { anchor: "page-login", title: "登录页" },
     ],

@@ -1,10 +1,12 @@
 from typing import Any
+from urllib.parse import urlparse
 
 from agno.agent import Agent
 from agno.models.openai.like import OpenAILike
 from agno.team import Team
 
 from app.config.setting import settings
+from app.core.logger import logger
 
 
 class AgnoFactory:
@@ -18,6 +20,43 @@ class AgnoFactory:
     NUM_HISTORY_RUNS = 3
     REQUEST_TIMEOUT = 60.0  # LLM 请求总超时（秒），流式响应需放长
     CONNECT_TIMEOUT = 10.0  # TCP 连接超时（秒）
+
+    @staticmethod
+    def _mask_api_key(api_key: str | None) -> str:
+        if not api_key:
+            return ""
+        if len(api_key) <= 8:
+            return "*" * len(api_key)
+        return f"{api_key[:4]}...{api_key[-4:]}"
+
+    @staticmethod
+    def _normalize_base_url(base_url: str | None) -> str | None:
+        if not base_url:
+            return base_url
+
+        value = base_url.strip().rstrip("/")
+        parsed = urlparse(value)
+        host = (parsed.netloc or "").lower()
+        path = parsed.path.rstrip("/")
+
+        default_path_by_host = {
+            "api.openai.com": "/v1",
+            "api.deepseek.com": "/v1",
+            "api.moonshot.cn": "/v1",
+            "dashscope.aliyuncs.com": "/compatible-mode/v1",
+            "open.bigmodel.cn": "/api/paas/v4",
+            "localhost:11434": "/v1",
+            "127.0.0.1:11434": "/v1",
+        }
+
+        if path:
+            return value
+
+        expected_path = default_path_by_host.get(host)
+        if not expected_path:
+            return value
+
+        return f"{value}{expected_path}"
 
     def create_agent(
         self,
@@ -53,6 +92,17 @@ class AgnoFactory:
             model_id = model_config.get("model_id") or model_id
             if isinstance(model_config.get("temperature"), (int, float)):
                 temperature = float(model_config["temperature"])
+
+        base_url = self._normalize_base_url(base_url)
+
+        logger.info(
+            "创建 AI Agent: session_id={} user_id={} model_id={} base_url={} api_key={}",
+            session_id,
+            user_id,
+            model_id,
+            base_url,
+            self._mask_api_key(api_key),
+        )
 
         # 创建 Agent
         fastapiadmin_agent = Agent(

@@ -1,6 +1,11 @@
 <template>
   <ElScrollbar ref="messagesContainer" class="chat-messages">
-    <WelcomeScreen v-if="messages.length === 0" @prompt-click="handlePromptClick" />
+    <WelcomeScreen
+      v-if="messages.length === 0"
+      :title="assistantTitle"
+      :subtitle="assistantSubtitle"
+      @prompt-click="handlePromptClick"
+    />
     <div v-else class="messages-list">
       <FaMessageItem
         v-for="message in messages"
@@ -25,6 +30,8 @@ import type { ChatMessage } from "../types";
 interface Props {
   messages: ChatMessage[];
   error: string;
+  assistantTitle?: string;
+  assistantSubtitle?: string;
 }
 
 interface Emits {
@@ -72,7 +79,17 @@ defineExpose({
 <style lang="scss" scoped>
 .chat-messages {
   /* 与 index chat-main 同底，避免 disabled 灰 + page 色打架 */
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
   background: transparent;
+
+  :deep(.el-scrollbar__view) {
+    width: 100%;
+    min-height: 100%;
+  }
 
   .messages-list {
     max-width: 800px;

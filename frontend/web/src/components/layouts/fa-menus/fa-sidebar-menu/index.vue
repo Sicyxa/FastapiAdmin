@@ -574,14 +574,19 @@ watch(menuOpen, (isMenuOpen: boolean) => {
       top: 0;
       bottom: 0;
       left: 64px;
+      right: 14px;
       box-sizing: border-box;
       margin-left: 10px;
-      font-size: 19px;
+      overflow: hidden;
+      font-size: 17px;
       font-weight: 700;
       letter-spacing: 0.03em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
 
       &.is-dual-menu-name {
         left: 25px;
+        right: 16px;
         margin: auto;
       }
     }

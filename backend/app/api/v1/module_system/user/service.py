@@ -37,6 +37,26 @@ class UserService:
     def __init__(self, auth: AuthSchema) -> None:
         self.auth = auth
 
+    async def _validate_role_ids(self, role_ids: list[int]) -> None:
+        if not role_ids:
+            return
+
+        roles = await RoleCRUD(self.auth).get_list(search={"id": ("in", role_ids)})
+        if len(roles) != len(role_ids):
+            raise CustomException(msg="部分角色不存在")
+        if not all(role.status == 0 for role in roles):
+            raise CustomException(msg="部分角色已被禁用")
+
+    async def _validate_position_ids(self, position_ids: list[int]) -> None:
+        if not position_ids:
+            return
+
+        positions = await PositionCRUD(self.auth).get_list(search={"id": ("in", position_ids)})
+        if len(positions) != len(position_ids):
+            raise CustomException(msg="部分岗位不存在")
+        if not all(position.status == 0 for position in positions):
+            raise CustomException(msg="部分岗位已被禁用")
+
     async def detail(self, id: int) -> UserOutSchema:
         user = await UserCRUD(self.auth).get_or_404(id=id)
         result = UserOutSchema.model_validate(user)
@@ -87,12 +107,18 @@ class UserService:
 
         if data.password:
             data.password = PwdUtil.hash_password(password=data.password)
+        if "role_ids" in data.model_fields_set:
+            await self._validate_role_ids(data.role_ids or [])
+        if "position_ids" in data.model_fields_set:
+            await self._validate_position_ids(data.position_ids or [])
         user_dict = data.model_dump(exclude_unset=True, exclude={"role_ids", "position_ids"})
         new_user = await UserCRUD(self.auth).create(data=user_dict)
-        if data.role_ids and len(data.role_ids) > 0:
-            await UserCRUD(self.auth).set_user_roles(user_ids=[new_user.id], role_ids=data.role_ids)
-        if data.position_ids and len(data.position_ids) > 0:
-            await UserCRUD(self.auth).set_user_positions(user_ids=[new_user.id], position_ids=data.position_ids)
+        if "role_ids" in data.model_fields_set:
+            await UserCRUD(self.auth).set_user_roles(user_ids=[new_user.id], role_ids=data.role_ids or [])
+        if "position_ids" in data.model_fields_set:
+            await UserCRUD(self.auth).set_user_positions(
+                user_ids=[new_user.id], position_ids=data.position_ids or []
+            )
         return UserOutSchema.model_validate(new_user)
 
     async def update(self, id: int, data: UserUpdateSchema) -> UserOutSchema:
@@ -121,23 +147,19 @@ class UserService:
             if dept.status == 1:
                 raise CustomException(msg="部门已被禁用")
 
-        new_user = await UserCRUD(self.auth).update(id=id, data=data)
+        if "role_ids" in data.model_fields_set:
+            await self._validate_role_ids(data.role_ids or [])
+        if "position_ids" in data.model_fields_set:
+            await self._validate_position_ids(data.position_ids or [])
 
-        if data.role_ids and len(data.role_ids) > 0:
-            roles = await RoleCRUD(self.auth).get_list(search={"id": ("in", data.role_ids)})
-            if len(roles) != len(data.role_ids):
-                raise CustomException(msg="更新失败，部分角色不存在")
-            if not all(role.status == 0 for role in roles):
-                raise CustomException(msg="更新失败，部分角色已被禁用")
-            await UserCRUD(self.auth).set_user_roles(user_ids=[id], role_ids=data.role_ids)
+        update_data = data.model_dump(exclude_unset=True, exclude={"role_ids", "position_ids"})
+        new_user = await UserCRUD(self.auth).update(id=id, data=update_data)
 
-        if data.position_ids and len(data.position_ids) > 0:
-            positions = await PositionCRUD(self.auth).get_list(search={"id": ("in", data.position_ids)})
-            if len(positions) != len(data.position_ids):
-                raise CustomException(msg="更新失败，部分岗位不存在")
-            if not all(position.status == 0 for position in positions):
-                raise CustomException(msg="更新失败，部分岗位已被禁用")
-            await UserCRUD(self.auth).set_user_positions(user_ids=[id], position_ids=data.position_ids)
+        if "role_ids" in data.model_fields_set:
+            await UserCRUD(self.auth).set_user_roles(user_ids=[id], role_ids=data.role_ids or [])
+
+        if "position_ids" in data.model_fields_set:
+            await UserCRUD(self.auth).set_user_positions(user_ids=[id], position_ids=data.position_ids or [])
 
         return UserOutSchema.model_validate(new_user)
 

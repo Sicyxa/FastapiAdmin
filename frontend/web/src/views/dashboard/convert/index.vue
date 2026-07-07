@@ -161,14 +161,11 @@ const form = ref({
 const formats = [
   "DOCM",
   "DOCX",
-  "DOCXF",
   "DOTM",
   "DOTX",
   "EPUB",
   "FB2",
   "HTML",
-  "HWP",
-  "HWPX",
   "ODT",
   "OTT",
   "PAGES",
@@ -178,7 +175,6 @@ const formats = [
   "TXT",
   "PNG",
   "JPG",
-  "BMP",
   "GIF",
 ];
 const selectedFile = ref<File | null>(null);

@@ -19,6 +19,76 @@ import { MenuTypeEnum } from "@/enums/system/menu.enum";
 /** 前端模式并入菜单的内置路由（扩展点，默认空） */
 export const builtinFrontendRoutes: AppRouteRecord[] = [];
 
+const HIDDEN_MENU_PERMISSION_PREFIXES = [
+  "module_system:dept:",
+  "module_system:position:",
+  "module_system:tenant:",
+  "module_package:package:",
+] as const;
+
+const HIDDEN_MENU_ROUTE_PATHS = new Set([
+  "/system/dept",
+  "/system/position",
+  "/platform/tenant",
+  "/platform/package",
+]);
+
+const HIDDEN_MENU_COMPONENT_PATHS = new Set([
+  "/module_system/dept/index",
+  "/module_system/position/index",
+  "/module_platform/tenant/index",
+  "/module_platform/package/index",
+]);
+
+const HIDDEN_MENU_TITLES = new Set(["部门管理", "岗位管理", "租户管理", "套餐管理"]);
+
+function normalizeMatchPath(value?: string): string {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed) return "";
+  const normalized = trimmed.replace(/\/+/g, "/").replace(/\/$/, "");
+  return normalized.startsWith("/") ? normalized : `/${normalized}`;
+}
+
+function matchesBlockedPath(path: string, blockedPaths: Set<string>): boolean {
+  if (!path) return false;
+  if (blockedPaths.has(path)) return true;
+  return Array.from(blockedPaths).some((blocked) => path.startsWith(`${blocked}/`));
+}
+
+function shouldHideBusinessMenu(item: MenuTable): boolean {
+  const permission = (item.permission ?? "").trim();
+  if (HIDDEN_MENU_PERMISSION_PREFIXES.some((prefix) => permission.startsWith(prefix))) {
+    return true;
+  }
+
+  if (matchesBlockedPath(normalizeMatchPath(item.route_path), HIDDEN_MENU_ROUTE_PATHS)) {
+    return true;
+  }
+
+  if (
+    matchesBlockedPath(normalizeMatchPath(item.component_path), HIDDEN_MENU_COMPONENT_PATHS)
+  ) {
+    return true;
+  }
+
+  return HIDDEN_MENU_TITLES.has((item.title ?? "").trim());
+}
+
+function filterHiddenBusinessMenus(items: MenuTable[]): MenuTable[] {
+  return items.reduce<MenuTable[]>((acc, item) => {
+    if (shouldHideBusinessMenu(item)) {
+      return acc;
+    }
+
+    const children = item.children?.length ? filterHiddenBusinessMenus(item.children) : item.children;
+    acc.push({
+      ...item,
+      children,
+    });
+    return acc;
+  }, []);
+}
+
 function normalizeMenuNestedPaths(items: MenuTable[], parentAbsolutePath = ""): MenuTable[] {
   return items.map((node) => {
     const raw = (node.route_path ?? "").trim();
@@ -200,7 +270,7 @@ export class MenuProcessor {
     const userStore = useUserStore();
     const fromUser = userStore.routeList;
     if (Array.isArray(fromUser) && fromUser.length > 0) {
-      const routes = backendMenusToAppRoutes(fromUser);
+      const routes = backendMenusToAppRoutes(filterHiddenBusinessMenus(fromUser));
       return this.filterEmptyMenus(routes);
     }
     return [];

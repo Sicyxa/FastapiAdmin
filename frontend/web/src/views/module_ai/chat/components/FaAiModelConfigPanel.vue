@@ -15,7 +15,7 @@
           </ElTag>
         </div>
         <ElButton
-          v-if="items.length > 0"
+          v-if="canManage && items.length > 0"
           :disabled="!activeId"
           size="small"
           plain
@@ -43,12 +43,21 @@
             <ElIcon class="empty-icon" :size="56"><Cpu /></ElIcon>
             <ElIcon class="empty-icon-bg" :size="100"><ChatLineSquare /></ElIcon>
           </div>
-          <div class="empty-title">添加你的第一个 AI 模型</div>
+          <div class="empty-title">{{ canManage ? "添加你的第一个 AI 模型" : "暂无可用 AI 模型" }}</div>
           <div class="empty-desc">
-            支持 OpenAI、DeepSeek、Ollama 等任何 OpenAI 兼容服务<br />
-            配置后即可在 AI 助手页一键切换
+            <template v-if="canManage">
+              支持 OpenAI、DeepSeek、Ollama 等任何 OpenAI 兼容服务<br />
+              配置后即可在 AI 助手页一键切换
+            </template>
+            <template v-else>管理员尚未配置可用模型，请联系管理员添加后再使用</template>
           </div>
-          <ElButton type="primary" size="large" :icon="Plus" @click="openCreate">
+          <ElButton
+            v-if="canManage"
+            type="primary"
+            size="large"
+            :icon="Plus"
+            @click="openCreate"
+          >
             立即添加
           </ElButton>
         </div>
@@ -83,7 +92,7 @@
                   </div>
                   <div class="item-model">{{ item.model_id }}</div>
                 </div>
-                <div class="item-actions" @click.stop>
+                <div v-if="canManage" class="item-actions" @click.stop>
                   <ElTooltip content="展开详情" placement="top" :show-after="200">
                     <ElButton text circle size="small" @click="toggleExpand(item.id)">
                       <ElIcon :class="{ rotated: expandedId === item.id }">
@@ -100,7 +109,7 @@
                 </div>
               </div>
               <!-- 展开详情 -->
-              <div v-show="expandedId === item.id" class="item-detail">
+              <div v-if="canManage" v-show="expandedId === item.id" class="item-detail">
                 <div class="detail-row">
                   <span class="detail-label">Base URL</span>
                   <span class="detail-value">{{ item.base_url }}</span>
@@ -143,7 +152,7 @@
       </div>
 
       <!-- 底部固定添加按钮 - 始终可见 -->
-      <div v-if="items.length > 0" class="footer-add">
+      <div v-if="canManage && items.length > 0" class="footer-add">
         <ElButton type="primary" plain :icon="Plus" class="add-btn" @click="openCreate">
           添加新模型
         </ElButton>
@@ -268,6 +277,7 @@ const emit = defineEmits<{ changed: [] }>();
 
 const loading = ref(false);
 const saving = ref(false);
+const canManage = ref(false);
 const items = ref<AiModelConfigItem[]>([]);
 const activeId = ref<string | null>(null);
 const expandedId = ref<string | null>(null);
@@ -318,9 +328,9 @@ const rules: FormRules<AiModelConfigInput> = {
 };
 
 const activeModelName = computed(() => {
-  if (!activeId.value) return "系统默认";
+  if (!activeId.value) return canManage.value ? "系统默认" : "未选择模型";
   const item = items.value.find((i) => i.id === activeId.value);
-  return item?.name || "系统默认";
+  return item?.name || (canManage.value ? "系统默认" : "未选择模型");
 });
 
 const loadList = async () => {
@@ -331,6 +341,7 @@ const loadList = async () => {
       const data: AiModelConfigList = res.data.data;
       items.value = data.items || [];
       activeId.value = data.active_id;
+      canManage.value = !!data.can_manage;
     }
   } catch {
     ElMessage.error("加载模型配置失败");
@@ -351,11 +362,13 @@ const resetForm = () => {
 };
 
 const openCreate = () => {
+  if (!canManage.value) return;
   resetForm();
   dialogVisible.value = true;
 };
 
 const openEdit = (item: AiModelConfigItem) => {
+  if (!canManage.value) return;
   form.id = item.id;
   form.name = item.name;
   form.base_url = item.base_url;
@@ -368,6 +381,7 @@ const openEdit = (item: AiModelConfigItem) => {
 };
 
 const handleSave = async () => {
+  if (!canManage.value) return;
   if (!formRef.value || saving.value) return;
   try {
     await formRef.value.validate();
@@ -436,6 +450,7 @@ const handleItemClick = async (item: AiModelConfigItem) => {
 };
 
 const handleUseDefault = async () => {
+  if (!canManage.value) return;
   try {
     const res = await AiChatAPI.activateModelConfig("");
     if (res.data?.code === 0) {
@@ -450,6 +465,7 @@ const handleUseDefault = async () => {
 };
 
 const handleDelete = async (item: AiModelConfigItem) => {
+  if (!canManage.value) return;
   try {
     await ElMessageBox.confirm(`确认删除模型「${item.name}」？此操作不可恢复`, "删除确认", {
       type: "warning",
@@ -501,6 +517,7 @@ onMounted(loadList);
 .ai-model-config {
   display: flex;
   flex-direction: column;
+  min-height: 100%;
   gap: 16px;
 }
 
@@ -542,8 +559,10 @@ onMounted(loadList);
 
 .config-section {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
 }
 
 .section-header {
@@ -611,7 +630,11 @@ onMounted(loadList);
 
 /* 列表 */
 .config-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
   width: 100%;
+  padding-right: 4px;
 }
 
 .list-inner {

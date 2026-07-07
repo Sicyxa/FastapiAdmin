@@ -151,7 +151,7 @@ export const dashboardLayoutChildren: AppRouteRecordRaw[] = [
   {
     path: "assistant",
     name: "DashboardAiAssistant",
-    component: () => import("@views/module_ai/chat/index.vue"),
+    component: () => import("@views/dashboard/assistant/index.vue"),
     meta: {
       title: "menus.dashboard.assistant",
       icon: "ri:message-2-line",
@@ -309,7 +309,7 @@ function dashboardRoutesToShellMenu(route: AppRouteRecord, parentAbs = ""): AppR
 }
 
 export function mergeShellRoutesIntoMenu(menuList: AppRouteRecord[]): AppRouteRecord[] {
-  const displayMenuList = removePromotedAiAssistantMenu(menuList);
+  const displayMenuList = menuList;
   const paths = new Set<string>();
   const names = new Set<string>();
   collectPathsAndNames(displayMenuList, paths, names);

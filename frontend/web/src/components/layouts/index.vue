@@ -25,6 +25,7 @@
 
     <!-- 全局浮层层（引导、通知等跨页面组件） -->
     <div id="app-global">
+      <FaSettingsPanel />
       <FaGlobalComponent />
       <FaGuide v-if="guideVisible" v-model="guideVisible" @skip="onGuideFinished" />
     </div>
@@ -45,6 +46,7 @@
  */
 import { computed } from "vue";
 import { useAppStore, useSettingsStore } from "@stores";
+import FaSettingsPanel from "./fa-settings-panel/index.vue";
 
 defineOptions({ name: "AppLayout" });
 

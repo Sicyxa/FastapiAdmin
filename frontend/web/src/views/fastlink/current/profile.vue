@@ -58,10 +58,6 @@
 
           <div class="relative z-10 w-75 mx-auto mt-7.5 text-left">
             <div class="mt-2.5 flex items-start">
-              <FaSvgIcon icon="ri:shield-user-line" class="text-g-700 shrink-0 mt-0.5" />
-              <span class="ml-2 text-sm">{{ infoFormState.tenant_by?.name || "—" }}</span>
-            </div>
-            <div class="mt-2.5 flex items-start">
               <FaSvgIcon icon="ri:user-3-line" class="text-g-700 shrink-0 mt-0.5" />
               <span class="ml-2 text-sm">{{ infoFormState.username || "—" }}</span>
             </div>
@@ -74,16 +70,6 @@
             <div class="mt-2.5 flex items-start">
               <FaSvgIcon icon="ri:mail-line" class="text-g-700 shrink-0 mt-0.5" />
               <span class="ml-2 text-sm break-all">{{ infoFormState.email || "—" }}</span>
-            </div>
-            <div class="mt-2.5 flex items-start">
-              <FaSvgIcon icon="ri:map-pin-line" class="text-g-700 shrink-0 mt-0.5" />
-              <span class="ml-2 text-sm">{{ infoFormState.dept?.name || "—" }}</span>
-            </div>
-            <div class="mt-2.5 flex items-start">
-              <FaSvgIcon icon="ri:briefcase-line" class="text-g-700 shrink-0 mt-0.5" />
-              <span class="ml-2 text-sm">
-                {{ infoFormState.positions?.map((p) => p.name).join("、") || "—" }}
-              </span>
             </div>
             <div class="mt-2.5 flex items-start">
               <FaSvgIcon icon="ri:calendar-line" class="text-g-700 shrink-0 mt-0.5" />

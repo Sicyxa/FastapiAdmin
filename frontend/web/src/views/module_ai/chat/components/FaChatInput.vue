@@ -39,7 +39,11 @@
               </div>
               <template #dropdown>
                 <ElDropdownMenu>
-                  <ElDropdownItem command="__default__" :class="{ 'is-active': !activeId }">
+                  <ElDropdownItem
+                    v-if="canManage"
+                    command="__default__"
+                    :class="{ 'is-active': !activeId }"
+                  >
                     <ElIcon class="dropdown-icon"><MagicStick /></ElIcon>
                     <span class="dropdown-label">系统默认</span>
                     <ElTag v-if="!activeId" type="success" size="small" effect="plain">
@@ -65,9 +69,13 @@
                     </ElDropdownItem>
                   </template>
                   <ElDropdownItem v-if="items.length === 0" disabled>
-                    <span class="dropdown-empty"
-                      >暂未配置模型，请到"星宇智能助手 → 设置 → 配置中心"添加</span
-                    >
+                    <span class="dropdown-empty">
+                      {{
+                        canManage
+                          ? "暂未配置模型，请到 AI 管理 -> AI智能助手 中添加"
+                          : "管理员尚未配置可用模型"
+                      }}
+                    </span>
                   </ElDropdownItem>
                 </ElDropdownMenu>
               </template>
@@ -160,11 +168,12 @@ const dropdownVisible = ref(false);
 const items = ref<AiModelConfigItem[]>([]);
 const activeId = ref<string | null>(null);
 const switching = ref(false);
+const canManage = ref(false);
 
 const activeModelName = computed(() => {
-  if (!activeId.value) return "系统默认";
+  if (!activeId.value) return canManage.value ? "系统默认" : "未选择模型";
   const item = items.value.find((i) => i.id === activeId.value);
-  return item?.name || "系统默认";
+  return item?.name || (canManage.value ? "系统默认" : "未选择模型");
 });
 
 const loadModels = async () => {
@@ -174,6 +183,7 @@ const loadModels = async () => {
       const data: AiModelConfigList = res.data.data;
       items.value = data.items || [];
       activeId.value = data.active_id;
+      canManage.value = !!data.can_manage;
     }
   } catch {
     /* 静默失败 */
@@ -194,7 +204,11 @@ const handleSelectModel = async (command: string) => {
     if (res.data?.code === 0) {
       activeId.value = command === "__default__" ? null : command;
       const newName =
-        command === "__default__" ? "系统默认" : items.value.find((i) => i.id === command)?.name;
+        command === "__default__"
+          ? canManage.value
+            ? "系统默认"
+            : "默认模型"
+          : items.value.find((i) => i.id === command)?.name;
       ElMessage.success(`已切换到：${newName}`);
       emit("model-changed");
     } else {

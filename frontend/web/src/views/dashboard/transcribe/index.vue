@@ -31,12 +31,16 @@
             :auto-upload="false"
             :limit="3"
           >
-            <FaSvgIcon icon="ri:file-music-line" class="upload-icon" />
-            <div class="upload-text">拖拽文件到此处，或点击选择文件</div>
-            <template #tip>
-              <div class="upload-tip">单个文件建议不超过 2GB，可在任务创建后继续补充素材。</div>
-            </template>
+            <div class="upload-stage">
+              <div class="upload-stage__icon">
+                <FaSvgIcon icon="ri:file-music-line" />
+              </div>
+              <div class="upload-stage__title">选择或拖入需要转写的音视频</div>
+              <p class="upload-stage__desc">支持 mp3、wav、m4a、mp4、mov 等常见格式。</p>
+            </div>
           </ElUpload>
+
+          <p class="upload-note">单个文件建议不超过 2GB，可在任务创建后继续补充素材。</p>
         </div>
 
         <div class="settings-card fa-card">
@@ -71,13 +75,22 @@
             <h2>最近任务</h2>
             <p>查看转写进度、下载文字稿或继续编辑。</p>
           </div>
-          <ElButton text type="primary">
-            刷新
-            <FaSvgIcon icon="ri:refresh-line" />
-          </ElButton>
+          <div class="section-header__actions">
+            <ElInput
+              v-model.trim="searchKeyword"
+              class="history-search"
+              clearable
+              :prefix-icon="Search"
+              placeholder="搜索文件名称"
+            />
+            <ElButton text type="primary">
+              刷新
+              <FaSvgIcon icon="ri:refresh-line" />
+            </ElButton>
+          </div>
         </div>
 
-        <ElTable :data="tasks" class="document-table">
+        <ElTable :data="paginatedTasks" class="document-table">
           <ElTableColumn prop="name" label="文件名称" min-width="180" />
           <ElTableColumn prop="duration" label="时长" width="100" />
           <ElTableColumn prop="language" label="语言" width="120" />
@@ -94,14 +107,29 @@
             </template>
           </ElTableColumn>
         </ElTable>
+
+        <div class="table-pagination">
+          <div class="table-pagination__summary">
+            共 {{ filteredTasks.length }} 条数据，当前第 {{ displayCurrentPage }} / {{ totalPages }} 页
+          </div>
+          <ElPagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 20, 50]"
+            :total="filteredTasks.length"
+            background
+            layout="sizes, prev, pager, next"
+          />
+        </div>
       </section>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
+import { Search } from "@element-plus/icons-vue";
 import type { UploadUserFile } from "element-plus";
 import FaDashboardSkeleton from "@/components/skeleton/fa-dashboard-skeleton.vue";
 
@@ -109,6 +137,9 @@ defineOptions({ name: "DashboardAudioVideoTranscription" });
 
 const loading = ref(true);
 const fileList = ref<UploadUserFile[]>([]);
+const searchKeyword = ref("");
+const currentPage = ref(1);
+const pageSize = ref(10);
 
 const form = ref({
   language: "auto",
@@ -142,6 +173,41 @@ const tasks = [
     updatedAt: "2026-06-29 17:12",
   },
 ];
+
+const filteredTasks = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase();
+  if (!keyword) return tasks;
+  return tasks.filter((item) => item.name.toLowerCase().includes(keyword));
+});
+
+const paginatedTasks = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return filteredTasks.value.slice(start, start + pageSize.value);
+});
+
+const totalPages = computed(() => {
+  if (filteredTasks.value.length === 0) return 0;
+  return Math.ceil(filteredTasks.value.length / pageSize.value);
+});
+
+const displayCurrentPage = computed(() => {
+  if (filteredTasks.value.length === 0) return 0;
+  return Math.min(currentPage.value, totalPages.value);
+});
+
+watch([searchKeyword, pageSize], () => {
+  currentPage.value = 1;
+});
+
+watch([filteredTasks, totalPages], () => {
+  if (totalPages.value === 0) {
+    currentPage.value = 1;
+    return;
+  }
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value;
+  }
+});
 
 function createTask(): void {
   if (fileList.value.length === 0) {
@@ -187,7 +253,7 @@ onMounted(() => {
 .document-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
-  align-items: start;
+  align-items: stretch;
   gap: 14px;
 }
 
@@ -234,6 +300,17 @@ onMounted(() => {
   }
 }
 
+.section-header__actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.history-search {
+  flex: 0 0 240px;
+  max-width: 100%;
+}
+
 .upload-card,
 .settings-card {
   .card-title {
@@ -253,30 +330,75 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 104px;
-    padding: 14px;
-    border-radius: 12px;
+    min-height: 176px;
+    padding: 0;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgb(46 109 240 / 6%), rgb(18 166 210 / 3%)), var(--el-bg-color);
+    border: 1px dashed var(--el-color-primary-light-5);
+    border-radius: 14px;
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  :deep(.el-upload-dragger:hover) {
+    border-color: var(--el-color-primary);
+    box-shadow: 0 12px 28px rgb(46 109 240 / 10%);
+    transform: translateY(-1px);
   }
 }
 
-.upload-icon {
-  margin-bottom: 8px;
-  font-size: 32px;
-  color: var(--el-color-primary);
+.upload-stage {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  min-height: 176px;
+  padding: 22px;
+  text-align: center;
 }
 
-.upload-text {
-  font-size: 13px;
+.upload-stage__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  color: var(--el-color-primary);
+  background: linear-gradient(135deg, rgb(46 109 240 / 14%), rgb(18 166 210 / 10%));
+  border-radius: 18px;
+
+  .fa-svg-icon {
+    font-size: 30px;
+  }
+}
+
+.upload-stage__title {
+  font-size: 16px;
+  font-weight: 650;
   color: var(--el-text-color-primary);
 }
 
-.upload-tip {
-  margin-top: 6px;
-  font-size: 12px;
+.upload-stage__desc {
+  margin: 0;
+  font-size: 13px;
   color: var(--el-text-color-secondary);
 }
 
+.upload-note {
+  margin: 10px 4px 0;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  text-align: right;
+}
+
 .settings-card {
+  height: 100%;
+
   :deep(.el-form) {
     flex: 1;
   }
@@ -303,6 +425,19 @@ onMounted(() => {
   width: 100%;
 }
 
+.table-pagination {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.table-pagination__summary {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+
 @media screen and (width <= 960px) {
   .document-grid {
     grid-template-columns: 1fr;
@@ -313,6 +448,17 @@ onMounted(() => {
   .document-header,
   .section-header {
     flex-direction: column;
+  }
+
+  .section-header__actions,
+  .table-pagination {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history-search {
+    flex-basis: auto;
   }
 }
 </style>

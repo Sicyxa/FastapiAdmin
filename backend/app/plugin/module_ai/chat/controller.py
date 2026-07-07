@@ -1,14 +1,17 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Request, UploadFile
 from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
 
+from app.config.setting import settings
 from app.common.response import ResponseSchema, SuccessResponse
 from app.core.base_params import PaginationQueryParam
-from app.core.base_schema import AuthSchema
+from app.core.base_schema import AuthSchema, UploadResponseSchema
 from app.core.dependencies import AuthPermission, redis_getter
 from app.core.router_class import OperationLogRoute
+from app.core.exceptions import CustomException
+from app.api.v1.module_common.file.service import FileService
 
 from .schema import (
     AiChatRequestSchema,
@@ -23,6 +26,47 @@ from .schema import (
 from .service import AiModelConfigService, ChatService
 
 ChatRouter = APIRouter(route_class=OperationLogRoute, prefix="/chat", tags=["AI管理", "AI对话"])
+
+
+@ChatRouter.post(
+    "/upload",
+    summary="上传聊天附件",
+    response_model=ResponseSchema[UploadResponseSchema],
+)
+async def upload_chat_file_controller(
+    request: Request,
+    file: UploadFile,
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:query"]))],
+) -> JSONResponse:
+    chat_allowed_extensions = {
+        ".txt",
+        ".md",
+        ".markdown",
+        ".csv",
+        ".json",
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+    }
+    original_allowed_extensions = list(settings.ALLOWED_EXTENSIONS)
+
+    try:
+        settings.ALLOWED_EXTENSIONS = sorted(set(original_allowed_extensions) | chat_allowed_extensions)
+        result = await FileService.upload_service(
+            base_url=str(request.base_url),
+            file=file,
+            upload_type="file",
+        )
+    except CustomException:
+        raise
+    finally:
+        settings.ALLOWED_EXTENSIONS = original_allowed_extensions
+
+    return SuccessResponse(data=result, msg="附件上传成功")
 
 
 @ChatRouter.get(
@@ -109,12 +153,15 @@ async def delete_session_controller(
 )
 async def ai_chat_controller(
     data: AiChatRequestSchema,
+    redis: Annotated[Redis, Depends(redis_getter)],
     auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:query"]))],
 ) -> JSONResponse:
     service = ChatService(auth)
+    model_config = await AiModelConfigService(auth, redis).get_active()
     result = await service.chat_non_stream(
         message=data.message,
         session_id=data.session_id,
+        model_config=model_config,
     )
     return SuccessResponse(
         data=AiChatResponseSchema(
@@ -200,7 +247,7 @@ async def delete_model_config_controller(
 async def activate_model_config_controller(
     config_id: Annotated[str, Path(description="配置项 ID；传 __default__ 使用系统默认")],
     redis: Annotated[Redis, Depends(redis_getter)],
-    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:update"]))],
+    auth: Annotated[AuthSchema, Depends(AuthPermission(["module_ai:chat:query"]))],
 ) -> JSONResponse:
     service = AiModelConfigService(auth, redis)
     await service.set_active(config_id)

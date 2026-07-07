@@ -3,13 +3,18 @@ import asyncio
 import json
 from collections.abc import AsyncGenerator
 from datetime import datetime
+from pathlib import Path
 from typing import Any
+from zipfile import ZipFile
+from xml.etree import ElementTree as ET
 
+from agno.media import File as AgnoFile
 from agno.run.team import TeamRunOutput
 from agno.session.team import TeamSession
 from agno.team.team import Team
 from redis.asyncio import Redis
 
+from app.config.setting import settings
 from app.api.v1.module_system.dept.service import DeptService
 from app.common.enums import RedisInitKeyConfig
 from app.common.request import PaginationService
@@ -109,27 +114,99 @@ def _unix_to_datetime(timestamp: int | None) -> str | None:
 
 def _extract_messages(runs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """从 runs 中提取消息"""
-    messages = []
+    messages: list[dict[str, Any]] = []
     if not runs:
         return messages
+
     for run in runs:
-        if not isinstance(run, dict):
-            continue
-        run_messages = run.get("messages", [])
-        if run_messages and isinstance(run_messages, list):
-            for msg in run_messages:
-                if isinstance(msg, dict):
-                    role = msg.get("role")
-                    if role in ("user", "assistant"):
-                        messages.append(
-                            {
-                                "id": msg.get("id"),
-                                "role": role,
-                                "content": msg.get("content", ""),
-                                "created_at": msg.get("created_at"),
-                            }
-                        )
+        messages.extend(_extract_messages_from_run(run))
+
     return messages
+
+
+def _extract_messages_from_run(run: dict[str, Any]) -> list[dict[str, Any]]:
+    if not isinstance(run, dict):
+        return []
+
+    messages: list[dict[str, Any]] = []
+
+    run_messages = run.get("messages", [])
+    if isinstance(run_messages, list):
+        for msg in run_messages:
+            parsed_message = _normalize_run_message(msg)
+            if parsed_message:
+                messages.append(parsed_message)
+
+    member_responses = run.get("member_responses", [])
+    if isinstance(member_responses, list):
+        for member_run in member_responses:
+            messages.extend(_extract_messages_from_run(member_run))
+
+    # 某些 Team 运行记录不会把最终对话落在顶层 messages，兜底从 input/content 恢复
+    if messages:
+        return messages
+
+    input_payload = run.get("input")
+    if isinstance(input_payload, dict):
+        input_content = _normalize_message_content(input_payload.get("input_content"))
+        if input_content:
+            messages.append(
+                {
+                    "id": f'{run.get("run_id", "run")}:input',
+                    "role": "user",
+                    "content": input_content,
+                    "created_at": run.get("created_at"),
+                }
+            )
+
+    output_content = _normalize_message_content(run.get("content"))
+    if output_content:
+        messages.append(
+            {
+                "id": f'{run.get("run_id", "run")}:output',
+                "role": "assistant",
+                "content": output_content,
+                "created_at": run.get("created_at"),
+            }
+        )
+
+    return messages
+
+
+def _normalize_run_message(msg: Any) -> dict[str, Any] | None:
+    if not isinstance(msg, dict):
+        return None
+
+    role = msg.get("role")
+    if role == "model":
+        role = "assistant"
+
+    if role not in ("user", "assistant"):
+        return None
+
+    content = _normalize_message_content(msg.get("content"))
+    if not content:
+        return None
+
+    return {
+        "id": msg.get("id"),
+        "role": role,
+        "content": content,
+        "created_at": msg.get("created_at"),
+    }
+
+
+def _normalize_message_content(content: Any) -> str:
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, (dict, list)):
+        try:
+            return json.dumps(content, ensure_ascii=False)
+        except TypeError:
+            return str(content)
+    return str(content)
 
 
 class ChatService:
@@ -137,6 +214,92 @@ class ChatService:
 
     def __init__(self, auth: AuthSchema) -> None:
         self.auth = auth
+
+    def _resolve_chat_files(self, files: list[dict[str, Any]] | None) -> tuple[list[AgnoFile], str]:
+        if not files:
+            return [], ""
+
+        agno_files: list[AgnoFile] = []
+        file_context_blocks: list[str] = []
+        upload_root = settings.UPLOAD_FILE_PATH.resolve()
+
+        for index, file_info in enumerate(files, start=1):
+            if not isinstance(file_info, dict):
+                continue
+
+            file_path = file_info.get("file_path")
+            if not file_path:
+                continue
+
+            path_obj = Path(file_path).expanduser()
+            try:
+                resolved_path = path_obj.resolve(strict=True)
+            except FileNotFoundError:
+                logger.warning("聊天附件不存在，跳过: {}", file_path)
+                continue
+            except Exception:
+                logger.warning("聊天附件路径解析失败，跳过: {}", file_path)
+                continue
+
+            if not str(resolved_path).startswith(str(upload_root)):
+                logger.warning("聊天附件路径非法，跳过: {}", resolved_path)
+                continue
+
+            mime_type = (file_info.get("type") or "").strip() or None
+            filename = file_info.get("name") or resolved_path.name
+            suffix = resolved_path.suffix.lower()
+
+            agno_files.append(
+                AgnoFile(
+                    filepath=str(resolved_path),
+                    mime_type=mime_type,
+                    filename=filename,
+                    name=filename,
+                    size=file_info.get("size"),
+                    format=suffix.lstrip(".") or None,
+                )
+            )
+
+            extracted_text = self._extract_text_from_file(resolved_path, suffix)
+            if extracted_text:
+                file_context_blocks.append(
+                    f"[附件{index}: {filename}]\n{extracted_text[:12000]}"
+                )
+
+        if not file_context_blocks:
+            return agno_files, ""
+
+        file_context = "\n\n".join(file_context_blocks)
+        return agno_files, (
+            "以下是用户本次上传的附件内容，请优先结合附件回答；如果附件内容不完整，要明确说明：\n\n"
+            f"{file_context}"
+        )
+
+    @staticmethod
+    def _extract_text_from_file(filepath: Path, suffix: str) -> str:
+        try:
+            if suffix in {".txt", ".md", ".markdown", ".csv", ".json"}:
+                return filepath.read_text(encoding="utf-8", errors="ignore").strip()
+
+            if suffix == ".docx":
+                return ChatService._extract_text_from_docx(filepath)
+        except Exception as exc:
+            logger.warning("附件文本提取失败: path={} error={}", filepath, exc)
+
+        return ""
+
+    @staticmethod
+    def _extract_text_from_docx(filepath: Path) -> str:
+        with ZipFile(filepath) as archive:
+            xml_bytes = archive.read("word/document.xml")
+        root = ET.fromstring(xml_bytes)
+        namespaces = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+        paragraphs: list[str] = []
+        for paragraph in root.findall(".//w:p", namespaces):
+            texts = [node.text for node in paragraph.findall(".//w:t", namespaces) if node.text]
+            if texts:
+                paragraphs.append("".join(texts))
+        return "\n".join(paragraphs).strip()
 
     async def chat_query(
         self,
@@ -168,7 +331,11 @@ class ChatService:
                 model_config=model_config,
             )
 
+            agno_files, file_context = self._resolve_chat_files(query.files)
             message = (query.message or "").strip()
+            if file_context:
+                message = f"{file_context}\n\n用户问题：{message or '请阅读并总结附件内容'}"
+
             if not message:
                 yield "请输入消息内容"
                 return
@@ -176,6 +343,12 @@ class ChatService:
             logger.info("开始流式生成: session_id={} message={!r}", session_id, message[:80])
             chunk_count = 0
             try:
+                if agno_files:
+                    logger.info(
+                        "当前模型使用文本注入附件内容，跳过原始文件直传: session_id={} file_count={}",
+                        session_id,
+                        len(agno_files),
+                    )
                 stream = agent.arun(input=message, stream=True)
                 logger.info("agent.arun 返回对象类型: {}", type(stream).__name__)
                 if hasattr(stream, "__aiter__"):
@@ -204,7 +377,12 @@ class ChatService:
             logger.error(f"聊天查询失败: {e}", exc_info=True)
             yield f"抱歉，处理您的请求时出现错误：{str(e)}"
 
-    async def chat_non_stream(self, message: str, session_id: str | None) -> dict[str, Any]:
+    async def chat_non_stream(
+        self,
+        message: str,
+        session_id: str | None,
+        model_config: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """非流式 AI 对话"""
         try:
             crud = ChatSessionCRUD(self.auth)
@@ -225,6 +403,7 @@ class ChatService:
                 dept_id=dept_id,
                 session_id=session_id,
                 db=crud.db,
+                model_config=model_config,
             )
 
             response: TeamRunOutput = await agent.arun(input=message)
@@ -354,29 +533,62 @@ class ChatService:
 # ================================================= #
 
 
-def _ai_model_items_key(user_id: int) -> str:
+def _normalize_tenant_id(tenant_id: int | None) -> int:
+    return tenant_id or 1
+
+
+def _shared_ai_model_items_key(tenant_id: int) -> str:
+    return f"{RedisInitKeyConfig.AI_MODEL_CONFIG.key}:shared:items:{tenant_id}"
+
+
+def _shared_ai_model_active_key(tenant_id: int) -> str:
+    return f"{RedisInitKeyConfig.AI_MODEL_CONFIG.key}:shared:active:{tenant_id}"
+
+
+def _user_ai_model_active_key(tenant_id: int, user_id: int) -> str:
+    return f"{RedisInitKeyConfig.AI_MODEL_CONFIG.key}:user:active:{tenant_id}:{user_id}"
+
+
+def _legacy_ai_model_items_key(user_id: int) -> str:
     return f"{RedisInitKeyConfig.AI_MODEL_CONFIG.key}:items:{user_id}"
 
 
-def _ai_model_active_key(user_id: int) -> str:
+def _legacy_ai_model_active_key(user_id: int) -> str:
     return f"{RedisInitKeyConfig.AI_MODEL_CONFIG.key}:active:{user_id}"
 
 
-async def get_user_model_config(redis: Redis, user_id: int) -> dict[str, Any] | None:
-    """读取当前激活的 AI 模型配置；不存在或未激活返回 None。"""
-    active_id = await RedisCURD(redis).get(_ai_model_active_key(user_id))
-    if not active_id:
-        return None
-    items = await list_user_model_configs(redis, user_id)
-    for item in items:
-        if item.get("id") == active_id:
-            return item
-    return None
+def _can_manage_shared_ai_models(user: Any) -> bool:
+    if not user:
+        return False
+    if getattr(user, "is_superuser", False):
+        return True
+    if getattr(user, "id", None) == 1:
+        return True
+
+    username = (getattr(user, "username", "") or "").strip().upper()
+    display_name = (getattr(user, "name", "") or "").strip()
+    nickname = (getattr(user, "nickname", "") or "").strip()
+
+    if username in {"ADMIN", "SUPER_ADMIN", "SUPERADMIN", "ROOT"}:
+        return True
+    if "管理员" in display_name or "管理员" in nickname:
+        return True
+
+    for role in getattr(user, "roles", []) or []:
+        if getattr(role, "status", 1) != 0:
+            continue
+
+        code = (getattr(role, "code", "") or "").strip().upper()
+        name = (getattr(role, "name", "") or "").strip()
+        if code in {"ADMIN", "SUPER_ADMIN"} or code.endswith("_ADMIN") or "管理员" in name:
+            return True
+
+    return False
 
 
-async def list_user_model_configs(redis: Redis, user_id: int) -> list[dict[str, Any]]:
-    """列出用户的所有模型配置项。"""
-    raw = await RedisCURD(redis).get(_ai_model_items_key(user_id))
+async def list_shared_model_configs(redis: Redis, tenant_id: int) -> list[dict[str, Any]]:
+    """列出租户共享的模型配置项。"""
+    raw = await RedisCURD(redis).get(_shared_ai_model_items_key(_normalize_tenant_id(tenant_id)))
     if not raw:
         return []
     try:
@@ -385,25 +597,100 @@ async def list_user_model_configs(redis: Redis, user_id: int) -> list[dict[str, 
             return data
         return []
     except (json.JSONDecodeError, TypeError):
-        logger.warning("AI 模型配置列表 JSON 解析失败: user_id={}", user_id)
+        logger.warning("AI 共享模型配置列表 JSON 解析失败: tenant_id={}", tenant_id)
         return []
 
 
-async def get_active_model_id(redis: Redis, user_id: int) -> str | None:
-    """读取当前激活的模型配置 ID；为空表示使用系统默认。"""
-    return await RedisCURD(redis).get(_ai_model_active_key(user_id))
+async def get_shared_active_model_id(redis: Redis, tenant_id: int) -> str | None:
+    tenant_id = _normalize_tenant_id(tenant_id)
+    active_id = await RedisCURD(redis).get(_shared_ai_model_active_key(tenant_id))
+    if not active_id:
+        items = await list_shared_model_configs(redis, tenant_id)
+        first_id = next((item.get("id") for item in items if item.get("id")), None)
+        return first_id if isinstance(first_id, str) else None
+
+    items = await list_shared_model_configs(redis, tenant_id)
+    if any(item.get("id") == active_id for item in items):
+        return active_id
+    return next((item.get("id") for item in items if item.get("id")), None)
 
 
-async def create_user_model_config(
+async def _get_user_active_override_id(redis: Redis, tenant_id: int, user_id: int) -> str | None:
+    override_id = await RedisCURD(redis).get(_user_ai_model_active_key(_normalize_tenant_id(tenant_id), user_id))
+    if not override_id:
+        return None
+
+    items = await list_shared_model_configs(redis, tenant_id)
+    return override_id if any(item.get("id") == override_id for item in items) else None
+
+
+async def get_effective_active_model_id(redis: Redis, tenant_id: int, user_id: int) -> str | None:
+    override_id = await _get_user_active_override_id(redis, tenant_id, user_id)
+    if override_id:
+        return override_id
+    return await get_shared_active_model_id(redis, tenant_id)
+
+
+async def get_user_model_config(redis: Redis, tenant_id: int, user_id: int) -> dict[str, Any] | None:
+    """读取当前用户实际生效的 AI 模型配置（用户选择优先，否则回落共享默认）。"""
+    active_id = await get_effective_active_model_id(redis, tenant_id, user_id)
+    if not active_id:
+        return None
+
+    items = await list_shared_model_configs(redis, tenant_id)
+    for item in items:
+        if item.get("id") == active_id:
+            return item
+    return None
+
+
+async def migrate_legacy_user_model_configs(redis: Redis, tenant_id: int, user_id: int) -> bool:
+    """将旧版“按用户存储”的模型配置迁移为当前租户共享配置。"""
+    tenant_id = _normalize_tenant_id(tenant_id)
+    if await list_shared_model_configs(redis, tenant_id):
+        return False
+
+    raw = await RedisCURD(redis).get(_legacy_ai_model_items_key(user_id))
+    if not raw:
+        return False
+
+    try:
+        items = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("旧版 AI 模型配置迁移失败，JSON 解析异常: user_id={}", user_id)
+        return False
+
+    if not isinstance(items, list) or not items:
+        return False
+
+    await RedisCURD(redis).set(
+        _shared_ai_model_items_key(tenant_id),
+        json.dumps(items, ensure_ascii=False),
+    )
+
+    legacy_active_id = await RedisCURD(redis).get(_legacy_ai_model_active_key(user_id))
+    if legacy_active_id and any(item.get("id") == legacy_active_id for item in items):
+        await RedisCURD(redis).set(_shared_ai_model_active_key(tenant_id), legacy_active_id)
+    else:
+        first_id = next((item.get("id") for item in items if item.get("id")), None)
+        if first_id:
+            await RedisCURD(redis).set(_shared_ai_model_active_key(tenant_id), first_id)
+
+    logger.info("已迁移旧版 AI 模型配置到共享空间: tenant_id={} user_id={}", tenant_id, user_id)
+    return True
+
+
+async def create_shared_model_config(
     redis: Redis,
-    user_id: int,
+    tenant_id: int,
     config: AiModelConfigSchema,
 ) -> dict[str, Any]:
-    """新增一个模型配置项。"""
+    """新增一个共享模型配置项。"""
     import uuid
     from datetime import datetime
 
-    items = await list_user_model_configs(redis, user_id)
+    tenant_id = _normalize_tenant_id(tenant_id)
+    items = await list_shared_model_configs(redis, tenant_id)
     item = {
         **config.model_dump(),
         "id": uuid.uuid4().hex,
@@ -411,71 +698,96 @@ async def create_user_model_config(
     }
     items.append(item)
     await RedisCURD(redis).set(
-        _ai_model_items_key(user_id),
+        _shared_ai_model_items_key(tenant_id),
         json.dumps(items, ensure_ascii=False),
     )
 
-    # 若用户尚未激活任何配置，自动激活新增的
-    if not await get_active_model_id(redis, user_id):
-        await RedisCURD(redis).set(_ai_model_active_key(user_id), item["id"])
+    # 若尚未设置共享默认模型，则自动激活新增项
+    if not await get_shared_active_model_id(redis, tenant_id):
+        await RedisCURD(redis).set(_shared_ai_model_active_key(tenant_id), item["id"])
 
-    logger.info("已新增 AI 模型配置: user_id={} name={} id={}", user_id, config.name, item["id"])
+    logger.info("已新增共享 AI 模型配置: tenant_id={} name={} id={}", tenant_id, config.name, item["id"])
     return item
 
 
-async def update_user_model_config(
+async def update_shared_model_config(
     redis: Redis,
-    user_id: int,
+    tenant_id: int,
     config_id: str,
     config: AiModelConfigSchema,
 ) -> dict[str, Any] | None:
-    """更新指定 ID 的模型配置项；不存在返回 None。"""
-    items = await list_user_model_configs(redis, user_id)
+    """更新指定 ID 的共享模型配置项；不存在返回 None。"""
+    tenant_id = _normalize_tenant_id(tenant_id)
+    items = await list_shared_model_configs(redis, tenant_id)
     target = next((it for it in items if it.get("id") == config_id), None)
     if not target:
         return None
     target.update(config.model_dump())
     await RedisCURD(redis).set(
-        _ai_model_items_key(user_id),
+        _shared_ai_model_items_key(tenant_id),
         json.dumps(items, ensure_ascii=False),
     )
-    logger.info("已更新 AI 模型配置: user_id={} id={}", user_id, config_id)
+    logger.info("已更新共享 AI 模型配置: tenant_id={} id={}", tenant_id, config_id)
     return target
 
 
-async def delete_user_model_config(redis: Redis, user_id: int, config_id: str) -> bool:
-    """删除指定 ID 的模型配置项；若该 ID 是当前激活则清空激活。"""
-    items = await list_user_model_configs(redis, user_id)
+async def delete_shared_model_config(redis: Redis, tenant_id: int, config_id: str) -> bool:
+    """删除指定 ID 的共享模型配置项；若该 ID 是共享默认则回退到剩余第一项。"""
+    tenant_id = _normalize_tenant_id(tenant_id)
+    items = await list_shared_model_configs(redis, tenant_id)
     new_items = [it for it in items if it.get("id") != config_id]
     if len(new_items) == len(items):
         return False
     await RedisCURD(redis).set(
-        _ai_model_items_key(user_id),
+        _shared_ai_model_items_key(tenant_id),
         json.dumps(new_items, ensure_ascii=False),
     )
-    active_id = await get_active_model_id(redis, user_id)
-    if active_id == config_id:
-        await RedisCURD(redis).delete(_ai_model_active_key(user_id))
-    logger.info("已删除 AI 模型配置: user_id={} id={}", user_id, config_id)
+    shared_active_id = await RedisCURD(redis).get(_shared_ai_model_active_key(tenant_id))
+    if shared_active_id == config_id:
+        next_active_id = next((item.get("id") for item in new_items if item.get("id")), None)
+        if next_active_id:
+            await RedisCURD(redis).set(_shared_ai_model_active_key(tenant_id), next_active_id)
+        else:
+            await RedisCURD(redis).delete(_shared_ai_model_active_key(tenant_id))
+    logger.info("已删除共享 AI 模型配置: tenant_id={} id={}", tenant_id, config_id)
     return True
 
 
-async def set_active_model_config(redis: Redis, user_id: int, config_id: str) -> bool:
-    """设置当前激活的模型配置项；id 为空字符串或 "__default__" 表示使用系统默认。"""
+async def set_shared_active_model_config(redis: Redis, tenant_id: int, config_id: str) -> bool:
+    """设置共享默认模型；id 为空字符串或 "__default__" 表示使用环境默认模型。"""
+    tenant_id = _normalize_tenant_id(tenant_id)
     if config_id in ("", "__default__"):
-        await RedisCURD(redis).delete(_ai_model_active_key(user_id))
-        logger.info("已切换到系统默认模型: user_id={}", user_id)
+        await RedisCURD(redis).delete(_shared_ai_model_active_key(tenant_id))
+        logger.info("已切换到环境默认模型: tenant_id={}", tenant_id)
         return True
-    items = await list_user_model_configs(redis, user_id)
+
+    items = await list_shared_model_configs(redis, tenant_id)
     if not any(it.get("id") == config_id for it in items):
         return False
-    await RedisCURD(redis).set(_ai_model_active_key(user_id), config_id)
-    logger.info("已切换 AI 模型: user_id={} id={}", user_id, config_id)
+    await RedisCURD(redis).set(_shared_ai_model_active_key(tenant_id), config_id)
+    logger.info("已切换共享 AI 模型: tenant_id={} id={}", tenant_id, config_id)
+    return True
+
+
+async def set_user_active_model_config(redis: Redis, tenant_id: int, user_id: int, config_id: str) -> bool:
+    """设置用户当前生效模型；空值表示回退到共享默认模型。"""
+    tenant_id = _normalize_tenant_id(tenant_id)
+    if config_id in ("", "__default__"):
+        await RedisCURD(redis).delete(_user_ai_model_active_key(tenant_id, user_id))
+        logger.info("已回退到共享默认模型: tenant_id={} user_id={}", tenant_id, user_id)
+        return True
+
+    items = await list_shared_model_configs(redis, tenant_id)
+    if not any(it.get("id") == config_id for it in items):
+        return False
+
+    await RedisCURD(redis).set(_user_ai_model_active_key(tenant_id, user_id), config_id)
+    logger.info("已设置用户生效 AI 模型: tenant_id={} user_id={} id={}", tenant_id, user_id, config_id)
     return True
 
 
 class AiModelConfigService:
-    """AI 模型配置业务服务（多配置 + 激活切换）"""
+    """AI 模型配置业务服务（共享配置 + 用户切换）"""
 
     def __init__(self, auth: AuthSchema, redis: Redis) -> None:
         self.auth = auth
@@ -487,30 +799,69 @@ class AiModelConfigService:
             raise CustomException(msg="未登录", code=10401, status_code=401)
         return self.auth.user.id
 
+    @property
+    def _tenant_id(self) -> int:
+        if self.auth.tenant_id:
+            return self.auth.tenant_id
+        if self.auth.user and getattr(self.auth.user, "tenant_id", None):
+            return self.auth.user.tenant_id
+        return 1
+
+    @property
+    def _can_manage(self) -> bool:
+        return _can_manage_shared_ai_models(self.auth.user)
+
+    def _ensure_manage_permission(self) -> None:
+        if not self._can_manage:
+            raise CustomException(msg="仅管理员可维护模型配置", code=10403, status_code=403)
+
     async def list(self) -> dict[str, Any]:
-        """获取配置列表 + 当前激活 ID。"""
-        items = await list_user_model_configs(self.redis, self._user_id)
-        active_id = await get_active_model_id(self.redis, self._user_id)
-        return {"items": items, "active_id": active_id}
+        """获取共享配置列表 + 当前用户生效模型 ID。"""
+        if self._can_manage:
+            await migrate_legacy_user_model_configs(self.redis, self._tenant_id, self._user_id)
+
+        items = await list_shared_model_configs(self.redis, self._tenant_id)
+        active_id = (
+            await get_shared_active_model_id(self.redis, self._tenant_id)
+            if self._can_manage
+            else await get_effective_active_model_id(self.redis, self._tenant_id, self._user_id)
+        )
+
+        response_items = items
+        if not self._can_manage:
+            response_items = [{**item, "api_key": "********"} for item in items]
+
+        return {
+            "items": response_items,
+            "active_id": active_id,
+            "can_manage": self._can_manage,
+        }
 
     async def get_active(self) -> dict[str, Any] | None:
-        return await get_user_model_config(self.redis, self._user_id)
+        return await get_user_model_config(self.redis, self._tenant_id, self._user_id)
 
     async def create(self, config: AiModelConfigSchema) -> dict[str, Any]:
-        return await create_user_model_config(self.redis, self._user_id, config)
+        self._ensure_manage_permission()
+        return await create_shared_model_config(self.redis, self._tenant_id, config)
 
     async def update(self, config_id: str, config: AiModelConfigSchema) -> dict[str, Any] | None:
-        result = await update_user_model_config(self.redis, self._user_id, config_id, config)
+        self._ensure_manage_permission()
+        result = await update_shared_model_config(self.redis, self._tenant_id, config_id, config)
         if result is None:
             raise CustomException(msg="模型配置不存在", code=10404, status_code=404)
         return result
 
     async def delete(self, config_id: str) -> None:
-        ok = await delete_user_model_config(self.redis, self._user_id, config_id)
+        self._ensure_manage_permission()
+        ok = await delete_shared_model_config(self.redis, self._tenant_id, config_id)
         if not ok:
             raise CustomException(msg="模型配置不存在", code=10404, status_code=404)
 
     async def set_active(self, config_id: str) -> None:
-        ok = await set_active_model_config(self.redis, self._user_id, config_id)
+        ok = (
+            await set_shared_active_model_config(self.redis, self._tenant_id, config_id)
+            if self._can_manage
+            else await set_user_active_model_config(self.redis, self._tenant_id, self._user_id, config_id)
+        )
         if not ok:
             raise CustomException(msg="模型配置不存在", code=10404, status_code=404)

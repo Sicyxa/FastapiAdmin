@@ -61,7 +61,7 @@ export const festivalConfigList: FestivalConfig[] = [
     isResidentBanner: true,
     count: 3,
     scrollText:
-      '🎉 {{version}}版本正式上线！能力全面提升，配套完整交付方案，助力高效开发与商业落地。 <a href="{{introduceUrl}}" target="_blank" rel="noopener noreferrer">👉 立即体验演示</a>',
+      '欢迎局域网访问 <a href="http://172.17.32.1:5180/web#/login?redirect=/workspace" target="_blank" rel="noopener noreferrer">http://172.17.32.1:5180/web#/login?redirect=/workspace</a>',
   },
 
   /**

@@ -97,7 +97,8 @@ async def websocket_chat_controller(websocket: WebSocket) -> None:
                     is_generating.set()
                     stop_event.clear()
                     # 读取用户的 AI 模型配置（每次可动态切换）
-                    model_config = await get_user_model_config(redis, user.id)
+                    tenant_id = auth.tenant_id or (user.tenant_id if user else None) or 1
+                    model_config = await get_user_model_config(redis, tenant_id, user.id)
                     try:
                         async for chunk in chat_service.chat_query(
                             query=query,

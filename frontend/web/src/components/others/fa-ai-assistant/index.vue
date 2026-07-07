@@ -420,7 +420,6 @@ const routeConfig = [
   { keywords: ["用户", "user", "user list"], path: "/system/user", name: "用户管理" },
   { keywords: ["角色", "role"], path: "/system/role", name: "角色管理" },
   { keywords: ["菜单", "menu"], path: "/system/menu", name: "菜单管理" },
-  { keywords: ["部门", "dept"], path: "/system/dept", name: "部门管理" },
   { keywords: ["字典", "dict"], path: "/system/dict", name: "字典管理" },
   { keywords: ["日志", "log"], path: "/system/log", name: "系统日志" },
 ];

@@ -42,20 +42,6 @@
           @click="visibleMenu"
         />
 
-        <!-- 刷新按钮 -->
-        <FaIconButton
-          v-if="shouldShowRefreshButton"
-          icon="ri:refresh-line"
-          class="ml-3! refresh-btn max-sm:hidden!"
-          :style="{ marginLeft: !isLeftMenu ? '10px' : '0' }"
-          @click="reload"
-        />
-
-        <!-- 快速入口 -->
-        <FaFastEnter v-if="shouldShowFastEnter && width >= headerBarFastEnterMinWidth">
-          <FaIconButton icon="ri:function-line" class="ml-3" />
-        </FaFastEnter>
-
         <!-- 面包屑 -->
         <FaBreadcrumb
           v-if="(shouldShowBreadcrumb && isLeftMenu) || (shouldShowBreadcrumb && isDualMenu)"
@@ -127,16 +113,6 @@
           </template>
         </ElDropdown>
 
-        <!-- 通知按钮 -->
-        <FaIconButton
-          v-if="shouldShowNotification"
-          icon="ri:notification-2-line"
-          class="notice-button relative"
-          @click="visibleNotice"
-        >
-          <div class="absolute top-2 right-2 size-1.5 bg-danger! rounded-full"></div>
-        </FaIconButton>
-
         <!-- 聊天按钮 -->
         <FaIconButton
           v-if="shouldShowChat"
@@ -151,8 +127,8 @@
         <div v-if="shouldShowSettings">
           <ElPopover :visible="showSettingGuide" placement="bottom-start" :width="190" :offset="0">
             <template #reference>
-              <div class="flex items-center justify-center">
-                <FaIconButton icon="ri:settings-line" class="setting-btn" @click="openSetting" />
+              <div class="flex items-center justify-center" @click.stop="openSetting">
+                <FaIconButton icon="ri:settings-line" class="setting-btn" />
               </div>
             </template>
             <template #default>
@@ -181,9 +157,6 @@
 
     <!-- 标签页 -->
     <FaWorkTab />
-
-    <!-- 通知 -->
-    <FaNotification v-model:value="showNotice" ref="notice" />
   </div>
 </template>
 
@@ -229,18 +202,14 @@ const headerSystemName = computed(() => {
 // 顶部栏功能配置
 const {
   shouldShowMenuButton,
-  shouldShowRefreshButton,
-  shouldShowFastEnter,
   shouldShowBreadcrumb,
   shouldShowGlobalSearch,
   shouldShowFullscreen,
-  shouldShowNotification,
   shouldShowChat,
   shouldShowLanguage,
   shouldShowSettings,
   shouldShowThemeToggle,
   shouldShowSizeSelect,
-  fastEnterMinWidth: headerBarFastEnterMinWidth,
 } = useHeaderBar();
 
 const { menuOpen, systemThemeColor, showSettingGuide, menuType, isDark, tabStyle, showAppLogo } =
@@ -248,9 +217,6 @@ const { menuOpen, systemThemeColor, showSettingGuide, menuType, isDark, tabStyle
 
 const { language } = storeToRefs(userStore);
 const { menuList } = storeToRefs(menuStore);
-
-const showNotice = ref(false);
-const notice = ref(null);
 
 // 菜单类型判断
 const isLeftMenu = computed(() => menuType.value === MenuTypeEnum.LEFT);
@@ -262,11 +228,6 @@ const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
 onMounted(() => {
   initLanguage();
-  document.addEventListener("click", bodyCloseNotice);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("click", bodyCloseNotice);
 });
 
 /**
@@ -338,31 +299,6 @@ const openSetting = (): void => {
  */
 const openSearchDialog = (): void => {
   mittBus.emit("openSearchDialog");
-};
-
-/**
- * 点击页面其他区域关闭通知面板
- * @param {Event} e - 点击事件对象
- */
-const bodyCloseNotice = (e: any): void => {
-  if (!showNotice.value) return;
-
-  const target = e.target as HTMLElement;
-
-  // 检查是否点击了通知按钮或通知面板内部
-  const isNoticeButton = target.closest(".notice-button");
-  const isNoticePanel = target.closest(".fa-notification-panel");
-
-  if (!isNoticeButton && !isNoticePanel) {
-    showNotice.value = false;
-  }
-};
-
-/**
- * 切换通知面板显示状态
- */
-const visibleNotice = (): void => {
-  showNotice.value = !showNotice.value;
 };
 
 /**

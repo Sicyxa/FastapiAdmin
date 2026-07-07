@@ -57,6 +57,15 @@ export const AiChatAPI = {
     });
   },
 
+  uploadChatFile(body: FormData) {
+    return request<ApiResponse<UploadFilePath>>({
+      url: `${API_PATH}/upload`,
+      method: "post",
+      data: body,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
   // ============ AI 模型配置 ============ //
   getModelConfig() {
     return request<ApiResponse<AiModelConfigList>>({
@@ -112,6 +121,7 @@ export interface AiModelConfigItem extends AiModelConfigInput {
 export interface AiModelConfigList {
   items: AiModelConfigItem[];
   active_id: string | null;
+  can_manage: boolean;
 }
 
 export default AiChatAPI;

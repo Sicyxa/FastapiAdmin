@@ -13,10 +13,13 @@
           class="size-6"
         />
       </button>
-      <span class="navbar-title">星宇智能助手</span>
+      <span class="navbar-title">{{ title }}</span>
     </div>
 
     <div class="navbar-right">
+      <ElButton v-if="showModelConfigTrigger" text :icon="Setting" @click="handleOpenModelConfig">
+        模型配置
+      </ElButton>
       <ElButton v-if="hasMessages" text :icon="Delete" @click="handleClearChat">
         清空对话
       </ElButton>
@@ -26,27 +29,33 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { Delete } from "@element-plus/icons-vue";
+import { Delete, Setting } from "@element-plus/icons-vue";
 import { resolveIconForFaSvgIcon } from "@utils";
 
 interface Props {
   messageCount: number;
   isSidebarCollapsed?: boolean;
+  showModelConfigTrigger?: boolean;
+  title?: string;
 }
 
 interface Emits {
   (e: "clear-chat"): void;
   (e: "toggle-sidebar"): void;
+  (e: "open-model-config"): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isSidebarCollapsed: false,
+  showModelConfigTrigger: false,
+  title: "星宇智能助手",
 });
 const emit = defineEmits<Emits>();
 
 const hasMessages = computed(() => props.messageCount > 0);
 
 const handleClearChat = () => emit("clear-chat");
+const handleOpenModelConfig = () => emit("open-model-config");
 const toggleSidebar = () => emit("toggle-sidebar");
 </script>
 

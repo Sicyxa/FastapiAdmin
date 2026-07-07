@@ -202,6 +202,20 @@ type UserSearchForm = {
   created_time?: string[];
 };
 
+type UserSubmitPayload = Pick<
+  UserForm,
+  | "id"
+  | "username"
+  | "name"
+  | "gender"
+  | "mobile"
+  | "email"
+  | "role_ids"
+  | "password"
+  | "status"
+  | "description"
+>;
+
 function buildUserReplaceParams(u: UserSearchForm): Record<string, unknown> {
   return {
     username: u.username,
@@ -605,23 +619,21 @@ const userExportContentConfig = computed(() => ({
   },
 }));
 
-const formData = ref<UserForm>({
+const initialFormData: UserSubmitPayload = {
   id: undefined,
   username: undefined,
   name: undefined,
-  dept_id: undefined,
-  dept_name: undefined,
-  role_ids: undefined,
-  role_names: undefined,
-  position_ids: undefined,
-  position_names: undefined,
+  role_ids: [],
   password: undefined,
   gender: undefined,
   email: undefined,
   mobile: undefined,
-  is_superuser: false,
   status: 0,
   description: undefined,
+};
+
+const formData = ref<UserSubmitPayload>({
+  ...initialFormData,
 });
 
 const { dialogVisible } = useCrudDialog();
@@ -648,24 +660,29 @@ const rules = reactive({
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
-const initialFormData: UserForm = {
-  id: undefined,
-  username: undefined,
-  name: undefined,
-  dept_id: undefined,
-  dept_name: undefined,
-  role_ids: undefined,
-  role_names: undefined,
-  position_ids: undefined,
-  position_names: undefined,
-  password: undefined,
-  gender: undefined,
-  email: undefined,
-  mobile: undefined,
-  is_superuser: false,
-  status: 0,
-  description: undefined,
-};
+function buildUserSubmitPayload(source?: Partial<UserInfo> | UserForm): UserSubmitPayload {
+  const roleIds = Array.isArray(source?.role_ids)
+    ? source.role_ids.reduce<number[]>((acc, roleId) => {
+        if (typeof roleId === "number") {
+          acc.push(roleId);
+        }
+        return acc;
+      }, [])
+    : [];
+
+  return {
+    id: source?.id,
+    username: source?.username,
+    name: source?.name,
+    gender: source?.gender as UserForm["gender"],
+    mobile: source?.mobile,
+    email: source?.email,
+    role_ids: roleIds,
+    password: source?.password,
+    status: source?.status ?? 0,
+    description: source?.description,
+  };
+}
 
 async function handleSearchBarSearch(params: UserSearchForm) {
   await searchBarRef.value?.validate?.();
@@ -707,7 +724,7 @@ async function resetForm() {
     dataFormRef.value.resetFields();
     dataFormRef.value.clearValidate();
   }
-  Object.assign(formData.value, initialFormData);
+  formData.value = buildUserSubmitPayload(initialFormData);
 }
 
 async function handleCloseDialog() {
@@ -728,18 +745,23 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
   dialogVisible.type = type;
   if (id) {
     const response = await UserAPI.detailUser(id);
+    const userData = response.data.data ?? {};
     if (type === "detail") {
       dialogVisible.title = "用户详情";
-      Object.assign(detailFormData.value, response.data.data ?? {});
+      Object.assign(detailFormData.value, userData);
     } else if (type === "update") {
       dialogVisible.title = "修改用户";
-      Object.assign(formData.value, response.data.data);
-      formData.value.role_ids = (response.data.data.roles || []).map((item) => item.id as number);
+      formData.value = buildUserSubmitPayload(userData);
+      formData.value.role_ids = Array.isArray(userData.roles)
+        ? userData.roles
+            .map((item) => item.id)
+            .filter((roleId): roleId is number => typeof roleId === "number")
+        : [];
+      formData.value.password = undefined;
     }
   } else {
     dialogVisible.title = "新增用户";
-    Object.assign(formData.value, initialFormData);
-    formData.value.id = undefined;
+    formData.value = buildUserSubmitPayload(initialFormData);
     userFormRenderKey.value += 1;
   }
   dialogVisible.visible = true;
@@ -766,12 +788,13 @@ async function handleSubmit() {
     if (!valid) return;
     submitLoading.value = true;
     const id = formData.value.id;
+    const payload = buildUserSubmitPayload(formData.value);
     try {
       if (id) {
-        await UserAPI.updateUser(id, formData.value);
+        await UserAPI.updateUser(id, payload);
         await refreshUpdate();
       } else {
-        await UserAPI.createUser(formData.value);
+        await UserAPI.createUser(payload);
         await refreshCreate();
       }
       dialogVisible.visible = false;

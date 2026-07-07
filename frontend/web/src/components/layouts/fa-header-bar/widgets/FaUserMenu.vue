@@ -1,4 +1,4 @@
-<!-- 用户菜单：个人中心、配置中心、退出登录 -->
+<!-- 用户菜单：个人中心、退出登录 -->
 <template>
   <!-- inline-flex + items-center：与顶栏 FaIconButton 同一中线对齐，避免 Popover 触发层基线偏移 -->
   <div class="fa-user-menu inline-flex shrink-0 items-center leading-none">
@@ -63,13 +63,6 @@
               <FaSvgIcon icon="ri:user-3-line" class="mr-2 text-base" />
               <span class="text-sm">{{ $t("topBar.user.userCenter") }}</span>
             </li>
-            <li
-              class="flex items-center p-2 mb-3 select-none rounded-md cursor-pointer last:mb-0 hover:bg-(--el-color-primary)/10"
-              @click="openParamConfig"
-            >
-              <FaSvgIcon icon="ri:settings-3-line" class="mr-2 text-base" />
-              <span class="text-sm">{{ $t("topBar.user.paramConfig") }}</span>
-            </li>
             <div class="w-full h-px my-2 bg-g-300/80"></div>
             <li
               class="flex p-2 select-none rounded-md cursor-pointer last:mb-0 hover:bg-(--fa-gray-200) justify-center mt-5 mb-0 py-1.5 text-xs border border-g-400 hover:text-(--el-color-danger) hover:border-(--el-color-danger-light-3)"
@@ -81,8 +74,6 @@
         </div>
       </template>
     </ElPopover>
-
-    <FaConfigInfoDrawer v-model="paramDrawerVisible" />
   </div>
 </template>
 
@@ -100,8 +91,6 @@ const userStore = useUserStore();
 
 const { info: userInfo } = storeToRefs(userStore);
 const userMenuPopover = ref();
-const paramDrawerVisible = ref(false);
-
 const userAvatar = computed(() => {
   const a = (userInfo.value as { avatar?: string })?.avatar?.trim();
   return a || "";
@@ -115,11 +104,6 @@ const displayName = computed(
 );
 
 const displayEmail = computed(() => (userInfo.value as { email?: string })?.email || "");
-
-function openParamConfig(): void {
-  closeUserMenu();
-  paramDrawerVisible.value = true;
-}
 
 function goPage(path: string): void {
   router.push(path);

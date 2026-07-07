@@ -4,8 +4,8 @@
       <div class="ai-logo">
         <ElIcon size="64"><ChatDotRound /></ElIcon>
       </div>
-      <h1>星宇智能助手</h1>
-      <p class="welcome-subtitle">我是您的专属AI助手，可以帮您回答问题、处理任务和进行智能对话</p>
+      <h1>{{ title }}</h1>
+      <p class="welcome-subtitle">{{ subtitle }}</p>
 
       <div class="example-prompts">
         <div
@@ -29,10 +29,19 @@
 <script setup lang="ts">
 import { ChatDotRound } from "@element-plus/icons-vue";
 
+interface Props {
+  title?: string;
+  subtitle?: string;
+}
+
 interface Emits {
   (e: "prompt-click", prompt: string): void;
 }
 
+withDefaults(defineProps<Props>(), {
+  title: "星宇智能助手",
+  subtitle: "我是您的专属AI助手，可以帮您回答问题、处理任务和进行智能对话",
+});
 const emit = defineEmits<Emits>();
 
 const promptCards = [
@@ -57,12 +66,15 @@ const handlePromptClick = (prompt: string) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
   height: 100%;
   padding: 32px;
   text-align: center;
+  box-sizing: border-box;
 
   .welcome-content {
-    max-width: 800px;
+    width: min(100%, 800px);
+    margin: 0 auto;
 
     .ai-logo {
       margin-bottom: 24px;
@@ -88,7 +100,8 @@ const handlePromptClick = (prompt: string) => {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 16px;
-      max-width: 600px;
+      width: 100%;
+      max-width: none;
 
       .prompt-card {
         padding: 20px;

@@ -35,30 +35,6 @@ export const MANUAL_SYSTEM_TAIL_PAGES: CompactManualPage[] = [
     ],
   },
   {
-    anchor: "page-dept",
-    title: "部门管理",
-    path: "module_system/dept/index.vue",
-    notes: [
-      "检索：FaSearchBar。",
-      "主区：树形表格（勾选）；展开/收起。",
-      "工具栏：新增、批量删除、批量更多(patch)、刷新、列配置、搜索栏切换。",
-      "弹层：详情；新增/编辑 Dialog（名称、编码、上级、状态等）。",
-      "权限：`module_system:dept:create|delete|patch` + 行 detail/update/delete。",
-    ],
-  },
-  {
-    anchor: "page-position",
-    title: "岗位管理",
-    path: "module_system/position/index.vue",
-    notes: [
-      "检索：FaSearchBar（含创建人 FaUserTableSelect 槽）。",
-      "主区：分页表格。",
-      "工具栏：新增、导出、批量删除、批量更多(patch)、刷新、列配置。",
-      "弹层：详情；新增/编辑 Dialog；导出 FaExportDialog。",
-      "权限：`module_system:position:create|export|delete|patch` + 行 detail/update/delete。",
-    ],
-  },
-  {
     anchor: "page-dict",
     title: "字典管理",
     path: "module_system/dict/index.vue",
@@ -90,17 +66,6 @@ export const MANUAL_SYSTEM_TAIL_PAGES: CompactManualPage[] = [
       "工具栏：新增、导出、批量删除、批量更多(patch)、刷新、列配置。",
       "弹层：详情；新增/编辑 Dialog；正文为富文本 `FaWangEditor`；HTML 预览。",
       "权限：`module_system:notice:create|export|delete|patch` + 行级操作。",
-    ],
-  },
-  {
-    anchor: "page-tenant",
-    title: "租户管理",
-    path: "module_system/tenant/index.vue",
-    notes: [
-      "检索：FaSearchBar + 分页表。",
-      "工具栏：新增、批量删除、刷新、列配置（无导出/更多 patch 于顶栏）。",
-      "弹层：详情；新增/编辑 Dialog（名称、编码、起止时间、状态、描述等）。",
-      "权限：`module_system:tenant:create|delete` + 行级 update/detail/delete。",
     ],
   },
   {

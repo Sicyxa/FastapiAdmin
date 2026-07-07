@@ -3,7 +3,7 @@
     <div class="sidebar-header">
       <div class="logo-section">
         <ElIcon class="logo-icon" :size="28"><ChatDotRound /></ElIcon>
-        <span v-if="!isCollapsed" class="project-name">星宇智能助手</span>
+        <span v-if="!isCollapsed" class="project-name">{{ title }}</span>
       </div>
     </div>
 
@@ -82,11 +82,10 @@
           <div class="user-status">在线</div>
         </div>
         <ElDropdown trigger="click" @command="handleUserCommand">
-          <ElIcon class="user-menu-icon"><Setting /></ElIcon>
+          <ElIcon class="user-menu-icon"><MoreFilled /></ElIcon>
           <template #dropdown>
             <ElDropdownMenu>
               <ElDropdownItem command="profile">个人中心</ElDropdownItem>
-              <ElDropdownItem command="settings">设置</ElDropdownItem>
               <ElDropdownItem command="logout" divided>退出登录</ElDropdownItem>
             </ElDropdownMenu>
           </template>
@@ -100,7 +99,6 @@
           <template #dropdown>
             <ElDropdownMenu>
               <ElDropdownItem command="profile">个人中心</ElDropdownItem>
-              <ElDropdownItem command="settings">设置</ElDropdownItem>
               <ElDropdownItem command="logout" divided>退出登录</ElDropdownItem>
             </ElDropdownMenu>
           </template>
@@ -117,7 +115,6 @@ import { ElMessage, ElMessageBox, ElScrollbar } from "element-plus";
 import {
   ChatLineRound,
   User,
-  Setting,
   MoreFilled,
   Plus,
   Search,
@@ -130,15 +127,15 @@ import AiChatAPI from "@/api/module_ai/chat";
 interface Props {
   currentSessionId?: string | null;
   isCollapsed?: boolean;
+  title?: string;
 }
 
 interface Emits {
   (e: "select-session", session: ChatSession): void;
   (e: "new-session"): void;
-  (e: "open-config"): void;
 }
 
-const { currentSessionId, isCollapsed = false } = defineProps<Props>();
+const { currentSessionId, isCollapsed = false, title = "星宇智能助手" } = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const router = useRouter();
@@ -276,8 +273,6 @@ const handleSessionCommand = async (command: string, session: ChatSession) => {
 const handleUserCommand = (command: string) => {
   if (command === "profile") {
     router.push("/fastlink/profile");
-  } else if (command === "settings") {
-    emit("open-config");
   } else if (command === "logout") {
     userStore.logout();
   }

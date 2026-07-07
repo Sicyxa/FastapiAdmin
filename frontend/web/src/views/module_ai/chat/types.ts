@@ -16,6 +16,8 @@ export interface UploadedFile {
   size: number;
   type: string;
   url?: string;
+  file_path?: string;
+  file_url?: string;
   file?: File;
 }
 

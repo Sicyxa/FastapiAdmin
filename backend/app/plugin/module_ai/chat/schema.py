@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from urllib.parse import urlparse, urlunparse
 from typing import Any
 
 from fastapi import Query
@@ -101,6 +102,26 @@ class AiModelConfigSchema(BaseModel):
         v = v.strip().rstrip("/")
         if not v.startswith(("http://", "https://")):
             raise ValueError("Base URL 必须以 http:// 或 https:// 开头")
+        parsed = urlparse(v)
+        host = (parsed.netloc or "").lower()
+        path = parsed.path.rstrip("/")
+
+        default_path_by_host = {
+            "api.openai.com": "/v1",
+            "api.deepseek.com": "/v1",
+            "api.moonshot.cn": "/v1",
+            "dashscope.aliyuncs.com": "/compatible-mode/v1",
+            "open.bigmodel.cn": "/api/paas/v4",
+            "localhost:11434": "/v1",
+            "127.0.0.1:11434": "/v1",
+        }
+
+        if not path:
+            expected_path = default_path_by_host.get(host)
+            if expected_path:
+                parsed = parsed._replace(path=expected_path)
+                return urlunparse(parsed).rstrip("/")
+
         return v
 
     @field_validator("model_id")
@@ -128,3 +149,4 @@ class AiModelConfigListResponse(BaseModel):
 
     items: list[AiModelConfigItemSchema] = Field(default_factory=list, description="配置项列表")
     active_id: str | None = Field(None, description="当前激活的配置项 ID；为空表示使用系统默认")
+    can_manage: bool = Field(default=False, description="当前用户是否可维护共享模型配置")
